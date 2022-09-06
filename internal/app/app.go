@@ -13,7 +13,7 @@ import (
 func Run(port string, dsn string) {
 	db, err := psql.NewPostgres(dsn)
 	if err != nil {
-		log.Fatal("Failed to initialize db connection: %s", err.Error())
+		log.Fatalf("Failed to initialize db connection: %s", err.Error())
 	}
 
 	storages := storage.New(db)
