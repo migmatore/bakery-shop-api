@@ -1,11 +1,13 @@
 package storage
 
-import "gorm.io/gorm"
+import (
+	"github.com/jackc/pgx/v4/pgxpool"
+)
 
 type Storage struct {
 	Customer *CustomerStorage
 }
 
-func New(db *gorm.DB) *Storage {
+func New(db *pgxpool.Pool) *Storage {
 	return &Storage{Customer: NewCustomerStorage(db)}
 }

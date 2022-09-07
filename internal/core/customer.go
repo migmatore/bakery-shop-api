@@ -10,3 +10,13 @@ type Customer struct {
 	House      string
 	Apartment  string
 }
+
+type CreateCustomerDTO struct {
+	FirstName  string
+	LastName   string
+	Patronymic string
+	City       string
+	Street     string
+	House      string
+	Apartment  string
+}

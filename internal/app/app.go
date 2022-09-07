@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"log"
 
 	"github.com/migmatore/bakery-shop-api/internal/service"
@@ -11,12 +12,12 @@ import (
 )
 
 func Run(port string, dsn string) {
-	db, err := psql.NewPostgres(dsn)
+	pool, err := psql.NewPostgres(context.Background(), 5, dsn)
 	if err != nil {
 		log.Fatalf("Failed to initialize db connection: %s", err.Error())
 	}
 
-	storages := storage.New(db)
+	storages := storage.New(pool)
 
 	services := service.New(service.Deps{
 		CustomerStorage: storages.Customer,
