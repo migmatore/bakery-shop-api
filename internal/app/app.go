@@ -17,6 +17,10 @@ func Run(port string, dsn string) {
 		log.Printf("Failed to initialize db connection: %s", err.Error())
 	}
 
+	//log.Printf("pool address %p", pool)
+
+	go psql.Reconnect(context.Background(), pool, dsn)
+
 	storages := storage.New(pool)
 
 	services := service.New(service.Deps{
