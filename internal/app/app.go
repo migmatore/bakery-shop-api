@@ -12,9 +12,9 @@ import (
 )
 
 func Run(port string, dsn string) {
-	pool, err := psql.NewPostgres(context.Background(), 5, dsn)
+	pool, err := psql.NewPostgres(context.Background(), 3, dsn)
 	if err != nil {
-		log.Fatalf("Failed to initialize db connection: %s", err.Error())
+		log.Printf("Failed to initialize db connection: %s", err.Error())
 	}
 
 	storages := storage.New(pool)
@@ -29,6 +29,6 @@ func Run(port string, dsn string) {
 
 	app := restHandlers.Init()
 
-	srv := rest.NewServer("localhost:"+port, app)
+	srv := rest.NewServer("localhost:"+port, app, pool)
 	srv.StartGracefulShutdown()
 }

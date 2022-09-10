@@ -14,20 +14,27 @@ func NewPostgres(ctx context.Context, maxAttempts int, dsn string) (*pgxpool.Poo
 	var pool *pgxpool.Pool
 
 	err = utils.DoWithTries(func() error {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
 
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
+			log.Printf("DB connection error. %v", err)
+			return err
+		}
+
+		if pool.Ping(ctx) != nil {
+			log.Printf("DB ping error. %v\n", err)
 			return err
 		}
 
 		return nil
 	}, maxAttempts, 5*time.Second)
 
-	if err != nil {
-		log.Fatal("error do with tires postgresql")
-	}
+	//if err != nil {
+	//	log.Println("Error do with tires postgresql")
+	//	return nil, err
+	//}
 
-	return pool, nil
+	return pool, err
 }

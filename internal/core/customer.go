@@ -20,3 +20,8 @@ type CreateCustomerDTO struct {
 	House      string
 	Apartment  string
 }
+
+type GetCustomreDTO struct {
+	Common
+	Name string
+}

@@ -25,5 +25,10 @@ func (h *Handler) Init() *fiber.App {
 
 	h.app.Use(cors.New())
 
+	api := h.app.Group("/api")
+	v1 := api.Group("/v1")
+
+	v1.Get("/customer", h.Customer.GetById)
+
 	return h.app
 }

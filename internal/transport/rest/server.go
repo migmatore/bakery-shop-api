@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 	"os"
 	"os/signal"
@@ -11,12 +12,14 @@ import (
 type Server struct {
 	app  *fiber.App
 	addr string
+	pool *pgxpool.Pool
 }
 
-func NewServer(addr string, app *fiber.App) *Server {
+func NewServer(addr string, app *fiber.App, pool *pgxpool.Pool) *Server {
 	return &Server{
 		app:  app,
 		addr: addr,
+		pool: pool,
 	}
 }
 
@@ -34,9 +37,15 @@ func (s *Server) StartGracefulShutdown() {
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 
+		log.Printf("Close all database connections...")
+		s.pool.Close()
+		log.Printf("All database connections have been closed!")
+
 		if err := s.app.Shutdown(); err != nil {
 			log.Printf("Server is not shutting down! Reason: %v", err)
 		}
+
+		log.Printf("Server has successfully shut down!")
 
 		close(idleConnsClosed)
 	}()

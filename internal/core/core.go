@@ -1,5 +1,5 @@
 package core
 
 type Common struct {
-	ID string `json:"id"`
+	ID int `json:"id"`
 }
