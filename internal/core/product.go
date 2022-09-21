@@ -1,6 +1,8 @@
 package core
 
 type Product struct {
-	Common
-	Name string
+	ID          int
+	Name        string
+	Description string
+	Cost        uint
 }

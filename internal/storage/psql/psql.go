@@ -43,7 +43,7 @@ func NewPostgres(ctx context.Context, maxAttempts int, dsn string) (*pgxpool.Poo
 func Reconnect(ctx context.Context, pool *pgxpool.Pool, dsn string) {
 	for {
 		if err := pool.Ping(ctx); err != nil {
-			//pool.Close()
+			pool.Close()
 			//ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			//defer cancel()
 			if pool != nil {

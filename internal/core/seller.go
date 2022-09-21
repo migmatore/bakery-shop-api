@@ -1,7 +1,7 @@
 package core
 
 type Seller struct {
-	Common
+	ID          int `json:"id"`
 	CompanyName string
 	// todo
 }

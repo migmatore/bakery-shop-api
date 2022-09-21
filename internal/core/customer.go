@@ -1,27 +1,27 @@
 package core
 
 type Customer struct {
-	Common
-	FirstName  string
-	LastName   string
-	Patronymic string
-	City       string
-	Street     string
-	House      string
-	Apartment  string
+	ID         int    `json:"id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Patronymic string `json:"patronymic"`
+	City       string `json:"city"`
+	Street     string `json:"street"`
+	House      string `json:"house"`
+	Apartment  string `json:"apartment"`
 }
 
 type CreateCustomerDTO struct {
-	FirstName  string
-	LastName   string
-	Patronymic string
-	City       string
-	Street     string
-	House      string
-	Apartment  string
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Patronymic string `json:"patronymic"`
+	City       string `json:"city"`
+	Street     string `json:"street"`
+	House      string `json:"house"`
+	Apartment  string `json:"apartment"`
 }
 
 type GetCustomreDTO struct {
-	Common
+	ID   int `json:"id"`
 	Name string
 }
