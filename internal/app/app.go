@@ -35,7 +35,7 @@ func (a *App) Run() {
 	go psql.Reconnect(context.Background(), pool, a.cfg, a.logger)
 
 	a.logger.Info("Storages initializing...")
-	storages := storage.New(pool)
+	storages := storage.New(pool, a.logger)
 
 	a.logger.Info("Services initializing...")
 	services := service.New(service.Deps{
