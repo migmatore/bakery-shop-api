@@ -28,7 +28,8 @@ func (h *Handler) Init() *fiber.App {
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")
 
-	v1.Get("/customer", h.Customer.GetById)
+	v1.Get("/customer/:id", h.Customer.GetById)
+	v1.Get("/customers", h.Customer.GetAll)
 
 	return h.app
 }

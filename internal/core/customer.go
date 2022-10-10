@@ -22,6 +22,6 @@ type CreateCustomerDTO struct {
 }
 
 type GetCustomreDTO struct {
-	ID   int `json:"id"`
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }

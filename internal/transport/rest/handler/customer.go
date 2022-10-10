@@ -9,6 +9,7 @@ import (
 
 type CustomerService interface {
 	GetById(ctx context.Context, id int) *core.GetCustomreDTO
+	GetAll(ctx context.Context) []*core.GetCustomreDTO
 }
 
 type CustomerHandler struct {
@@ -21,12 +22,24 @@ func NewCustomerHandler(s CustomerService) *CustomerHandler {
 
 func (h *CustomerHandler) GetById(c *fiber.Ctx) error {
 	ctx := context.TODO()
-	ctx, cancel := context.WithTimeout(ctx, 1000*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, 100*time.Millisecond)
 	defer cancel()
-	customer := h.service.GetById(ctx, 2)
+
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return err
+	}
+
+	customer := h.service.GetById(ctx, id)
 
 	return c.JSON(fiber.Map{
 		"id":   customer.ID,
 		"name": customer.Name,
 	})
+}
+
+func (h *CustomerHandler) GetAll(c *fiber.Ctx) error {
+	customers := h.service.GetAll(context.TODO())
+
+	return c.JSON(customers)
 }

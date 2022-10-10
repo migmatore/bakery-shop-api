@@ -2,16 +2,28 @@ package psql
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"github.com/migmatore/bakery-shop-api/internal/config"
+	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
 
-func NewPostgres(ctx context.Context, maxAttempts int, dsn string) (*pgxpool.Pool, error) {
+func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config, logger *logging.Logger) (*pgxpool.Pool, error) {
 	var err error
 	var pool *pgxpool.Pool
+
+	dsn := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s?pool_max_conns=%s",
+		cfg.DBConnection.Username,
+		cfg.DBConnection.Password,
+		cfg.DBConnection.Host,
+		cfg.DBConnection.Port,
+		cfg.DBConnection.DB,
+		cfg.DBConnection.MaxConns,
+	)
 
 	err = utils.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
@@ -19,28 +31,33 @@ func NewPostgres(ctx context.Context, maxAttempts int, dsn string) (*pgxpool.Poo
 
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
-			log.Printf("DB connection error. %v", err)
+			logger.Errorf("DB connection error. %v", err)
 			return err
 		}
 
 		if err := pool.Ping(ctx); err != nil {
-			log.Printf("DB ping error. %v\n", err)
+			logger.Errorf("DB ping error. %v\n", err)
 			return err
 		}
 
 		return nil
 	}, maxAttempts, 5*time.Second)
 
-	//if err != nil {
-	//	log.Println("Error do with tires postgresql")
-	//	return nil, err
-	//}
-
 	return pool, err
 }
 
-// Auto reconnect
-func Reconnect(ctx context.Context, pool *pgxpool.Pool, dsn string) {
+// Reconnect Auto reconnecting to db
+func Reconnect(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, logger *logging.Logger) {
+	dsn := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s?pool_max_conns=%s",
+		cfg.DBConnection.Username,
+		cfg.DBConnection.Password,
+		cfg.DBConnection.Host,
+		cfg.DBConnection.Port,
+		cfg.DBConnection.DB,
+		cfg.DBConnection.MaxConns,
+	)
+
 	for {
 		if err := pool.Ping(ctx); err != nil {
 			pool.Close()
@@ -49,21 +66,13 @@ func Reconnect(ctx context.Context, pool *pgxpool.Pool, dsn string) {
 			if pool != nil {
 				p, err := pgxpool.Connect(ctx, dsn)
 				if err != nil {
-					log.Printf("DB reconnection error. %v", err)
+					logger.Errorf("DB reconnection error. %v", err)
 					time.Sleep(1 * time.Second)
+
 					continue
 				}
-				//log.Printf("pool address %p", pool)
-				//log.Printf("p address %p", p)
 
 				pool = p
-
-				//log.Printf("pool address %p", pool)
-				//log.Printf("p address %p", p)
-				//
-				//log.Printf("pool not nil %p, %p", pool, p)
-				//
-				//time.Sleep(1 * time.Second)
 			}
 
 		}

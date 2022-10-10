@@ -32,3 +32,27 @@ func (s *CustomerStorage) FindOne(ctx context.Context, id int) *core.GetCustomre
 
 	return &c
 }
+
+func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
+	q := `select * from customers`
+
+	c := make([]*core.GetCustomreDTO, 0)
+
+	rows, err := s.pool.Query(ctx, q)
+	if err != nil {
+		log.Printf("Query error. %v", err)
+	}
+
+	for rows.Next() {
+		_c := core.GetCustomreDTO{}
+
+		err = rows.Scan(&_c.ID, &_c.Name)
+		if err != nil {
+			log.Printf("Query error. %v", err)
+		}
+
+		c = append(c, &_c)
+	}
+
+	return c
+}

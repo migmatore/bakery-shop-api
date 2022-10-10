@@ -7,6 +7,7 @@ import (
 
 type CustomerStorage interface {
 	FindOne(ctx context.Context, id int) *core.GetCustomreDTO
+	FindAll(ctx context.Context) []*core.GetCustomreDTO
 }
 
 type CustomerService struct {
@@ -19,4 +20,8 @@ func NewCustomerService(storage CustomerStorage) *CustomerService {
 
 func (s *CustomerService) GetById(ctx context.Context, id int) *core.GetCustomreDTO {
 	return s.storage.FindOne(ctx, id)
+}
+
+func (s *CustomerService) GetAll(ctx context.Context) []*core.GetCustomreDTO {
+	return s.storage.FindAll(ctx)
 }
