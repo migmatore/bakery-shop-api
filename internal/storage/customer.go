@@ -55,5 +55,7 @@ func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
 		c = append(c, &_c)
 	}
 
+	s.logger.Trace("Successful request")
+
 	return c
 }

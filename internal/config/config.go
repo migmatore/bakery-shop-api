@@ -15,7 +15,7 @@ type Config struct {
 		Port   string `env:"PORT" env-default:"10000"`
 	}
 	DBConnection struct {
-		Username string `env:"DB_USERNAME" env-default:"migmator"`
+		Username string `env:"DB_USERNAME" env-default:"migmatore"`
 		Password string `env:"DB_PASSWORD" env-default:"root"`
 		Host     string `env:"DB_HOST" env-default:"localhost"`
 		Port     string `env:"DB_PORT" env-default:"5432"`
@@ -23,7 +23,7 @@ type Config struct {
 		MaxConns string `env:"DB_MAX_CONNS" env-default:"10"`
 	}
 	AppConfig struct {
-		LogLevel string `env:"LOG_LEVEL" env-default:"trace"`
+		LogLevel string `env:"LOG_LEVEL" env-default:"info"`
 	}
 }
 
