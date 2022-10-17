@@ -1,50 +1,164 @@
-create table public.sellers
+CREATE TABLE IF NOT EXISTS categories
 (
-    id   bigint primary key,
-    name varchar(50)
+    category_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR(50)  NOT NULL UNIQUE,
+    description VARCHAR(250) NULL
 );
 
-create table public.products
+CREATE TABLE IF NOT EXISTS recipes
 (
-    id        bigint primary key,
-    name      varchar(50),
-    seller_id bigint references public.sellers (id) on delete cascade
+    recipe_id   INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR(150) NOT NULL UNIQUE,
+    description VARCHAR(250) NOT NULL,
+    notes       TEXT         NOT NULL
 );
 
-create table public.customers
+CREATE TABLE IF NOT EXISTS suppliers
 (
-    id   bigint primary key,
-    name varchar(50)
+    supplier_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name             VARCHAR(100) NOT NULL UNIQUE,
+    address          VARCHAR(150) NOT NULL,
+    telephone_number VARCHAR(100) NOT NULL
 );
 
-create table public.orders
+CREATE TABLE IF NOT EXISTS manufacturers
 (
-    id          bigint primary key,
-    product_id  bigint references public.products (id) on delete cascade,
-    customer_id bigint references public.customers (id) on delete cascade
+    manufacturer_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name            VARCHAR(150) NOT NULL UNIQUE,
+    supplier_id     INTEGER      NULL REFERENCES suppliers (supplier_id) ON DELETE SET NULL
 );
 
-insert into public.sellers (id, name)
-values (1, 'seller1'),
-       (2, 'seller2'),
-       (3, 'seller3');
+CREATE TABLE IF NOT EXISTS positions
+(
+    position_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR(150) NOT NULL UNIQUE,
+    description VARCHAR(250) NULL
+);
 
-insert into public.products (id, name, seller_id)
-values (1, 'product1', 1),
-       (2, 'product2', 1),
-       (3, 'product3', 2),
-       (4, 'product4', 3);
+CREATE TABLE IF NOT EXISTS employee_accounts
+(
+    employee_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    email               VARCHAR(100) NOT NULL UNIQUE,
+    password_hash       VARCHAR(64)  NOT NULL UNIQUE
+);
 
-insert into public.customers (id, name)
-values (1, 'customer1'),
-       (2, 'customer2'),
-       (3, 'customer3'),
-       (4, 'customer4');
+CREATE TABLE IF NOT EXISTS employees
+(
+    employee_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    first_name       VARCHAR(50)  NOT NULL,
+    last_name        VARCHAR(50)  NULL,
+    patronymic       VARCHAR(50)  NULL,
+    telephone_number VARCHAR(100) NOT NULL,
+    account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
+    position_id      INTEGER      NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
+    company_id       INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
+);
 
-insert into public.orders (id, product_id, customer_id)
-values (1, 1, 1),
-       (2, 1, 2),
-       (3, 2, 4),
-       (4, 1, 3),
-       (5, 3, 1),
-       (6, 4, 2);
+CREATE TABLE IF NOT EXISTS products
+(
+    product_id         INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name               VARCHAR(50)  NOT NULL,
+    description        VARCHAR(250) NULL,
+    price              NUMERIC      NOT NULL CHECK (price > 0),
+    manufacturing_date DATE         NOT NULL DEFAULT CURRENT_DATE CHECK (manufacturing_date <= expiration_date),
+    expiration_date    DATE         NOT NULL,
+    category_id        INTEGER      NULL REFERENCES categories (category_id) ON DELETE SET NULL,
+    recipe_id          INTEGER      NULL REFERENCES recipes (recipe_id) ON DELETE SET NULL,
+    manufacturer_id    INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ingredients
+(
+    ingredient_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name               VARCHAR(100) NOT NULL,
+    description        VARCHAR(250),
+    remaining_quantity INTEGER      NOT NULL,
+    supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS recipe_ingredients
+(
+    recipe_ingredient_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    recipe_id            INTEGER NOT NULL REFERENCES recipes (recipe_id) ON DELETE CASCADE,
+    ingredient_id        INTEGER NOT NULL REFERENCES ingredients (ingredient_id) ON DELETE CASCADE,
+    quantity             INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS payment_methods
+(
+    payment_method_id INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name              VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS receipts
+(
+    receipt_id        INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    order_date        DATE    NOT NULL DEFAULT CURRENT_DATE,
+    payment_details   TEXT    NOT NULL,
+    payment_method_id INTEGER NOT NULL REFERENCES payment_methods (payment_method_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS order_statuses
+(
+    order_status_id INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name            VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS delivery_methods
+(
+    delivery_method_id INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name               VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS customer_accounts
+(
+    customer_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    email               VARCHAR(100) NOT NULL UNIQUE,
+    password_hash       VARCHAR(64)  NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS delivery_addresses
+(
+    delivery_address_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    region              VARCHAR(200) NOT NULL,
+    city                VARCHAR(200) NOT NULL,
+    street              VARCHAR(200) NOT NULL,
+    house_number        VARCHAR(10)  NOT NULL,
+    building_number     VARCHAR(5)   NULL,
+    apartment_number    VARCHAR(5)   NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS customers
+(
+    customer_id         INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    first_name          VARCHAR(50)  NOT NULL,
+    last_name           VARCHAR(50)  NULL,
+    patronymic          VARCHAR(50)  NULL,
+    telephone_number    VARCHAR(100) NOT NULL,
+    account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
+    delivery_address_id INTEGER      NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS orders
+(
+    order_id            INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    customer_id         INTEGER NOT NULL REFERENCES customers (customer_id) ON DELETE CASCADE,
+    product_id          INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
+    receipt_id          INTEGER NOT NULL REFERENCES receipts (receipt_id) ON DELETE CASCADE,
+    order_status_id     INTEGER NOT NULL REFERENCES order_statuses (order_status_id) ON DELETE CASCADE,
+    delivery_address_id INTEGER NOT NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE CASCADE,
+    delivery_method_id  INTEGER NOT NULL REFERENCES delivery_methods (delivery_method_id) ON DELETE CASCADE
+);
+
+INSERT INTO payment_methods(name)
+VALUES ('Оплата онлайн'),
+       ('Оплата наличными после доставки'),
+       ('Оплата картой после доставки'),
+       ('Смешанная оплата после доставки(наличные и карта)');
+INSERT INTO order_statuses(name)
+VALUES ('В обработке'),
+       ('Доставляется'),
+       ('Доставлен');
+INSERT INTO delivery_methods(name)
+VALUES ('Самомывоз'),
+       ('Курьер');

@@ -1,17 +1,18 @@
 package core
 
 type Category struct {
-	ID   int
-	Name string
+	CategoryId  int
+	Name        string
+	Description string
 }
 
-type CreateCategory struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-}
-
-type GetCategory struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-}
+//type CreateCategory struct {
+//	Name        string `json:"name"`
+//	Description string `json:"description,omitempty"`
+//}
+//
+//type GetCategory struct {
+//	ID          int    `json:"id"`
+//	Name        string `json:"name"`
+//	Description string `json:"description,omitempty"`
+//}

@@ -16,25 +16,19 @@ func NewCustomerStorage(pool *pgxpool.Pool, logger *logging.Logger) *CustomerSto
 	return &CustomerStorage{pool: pool, logger: logger}
 }
 
-func (s *CustomerStorage) FindOne(ctx context.Context, id int) *core.GetCustomreDTO {
-	q := `select * from customers where customers.id=$1`
+func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.GetCustomreDTO, error) {
+	q := `select * from customers where customers.customer_id=$1`
 	var c core.GetCustomreDTO
-
-	//conn, err := s.pool.Acquire(ctx)
-	//if err != nil {
-	//	log.Printf("Unable to acquire a database connection: %v", err)
-	//	return &c
-	//}
-	//defer conn.Release()
 
 	if err := s.pool.QueryRow(ctx, q, id).Scan(&c.ID, &c.Name); err != nil {
 		s.logger.Errorf("Query error. %v", err)
+		return nil, err
 	}
 
-	return &c
+	return &c, nil
 }
 
-func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
+func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.GetCustomreDTO, error) {
 	q := `select * from customers`
 
 	c := make([]*core.GetCustomreDTO, 0)
@@ -42,6 +36,7 @@ func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
 		s.logger.Errorf("Query error. %v", err)
+		return nil, err
 	}
 
 	for rows.Next() {
@@ -50,6 +45,7 @@ func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
 		err = rows.Scan(&_c.ID, &_c.Name)
 		if err != nil {
 			s.logger.Errorf("Query error. %v", err)
+			return nil, err
 		}
 
 		c = append(c, &_c)
@@ -57,5 +53,5 @@ func (s *CustomerStorage) FindAll(ctx context.Context) []*core.GetCustomreDTO {
 
 	s.logger.Trace("Successful request")
 
-	return c
+	return c, nil
 }

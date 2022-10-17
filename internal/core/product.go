@@ -1,8 +1,13 @@
 package core
 
 type Product struct {
-	ID          int
-	Name        string
-	Description string
-	Cost        uint
+	ProductId         int
+	Name              string
+	Description       string
+	Price             float64
+	ManufacturingDate string
+	ExpirationDate    string
+	CategoryId        int
+	RecipeId          int
+	ManufacturerId    int
 }

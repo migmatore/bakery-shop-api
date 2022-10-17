@@ -8,8 +8,8 @@ import (
 )
 
 type CustomerService interface {
-	GetById(ctx context.Context, id int) *core.GetCustomreDTO
-	GetAll(ctx context.Context) []*core.GetCustomreDTO
+	GetById(ctx context.Context, id int) (*core.GetCustomreDTO, error)
+	GetAll(ctx context.Context) ([]*core.GetCustomreDTO, error)
 }
 
 type CustomerHandler struct {
@@ -30,7 +30,10 @@ func (h *CustomerHandler) GetById(c *fiber.Ctx) error {
 		return err
 	}
 
-	customer := h.service.GetById(ctx, id)
+	customer, err := h.service.GetById(ctx, id)
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(fiber.Map{
 		"id":   customer.ID,
@@ -39,7 +42,10 @@ func (h *CustomerHandler) GetById(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandler) GetAll(c *fiber.Ctx) error {
-	customers := h.service.GetAll(context.TODO())
+	customers, err := h.service.GetAll(context.TODO())
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(customers)
 }
