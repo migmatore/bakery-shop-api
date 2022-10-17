@@ -2,7 +2,8 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
 
 type Deps struct {
@@ -23,7 +24,9 @@ func New(deps Deps) *Handler {
 func (h *Handler) Init() *fiber.App {
 	h.app = fiber.New()
 
-	h.app.Use(cors.New())
+	//h.app.Use(cors.New())
+	h.app.Use(logger.New())
+	h.app.Get("/metrics", monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
 
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")

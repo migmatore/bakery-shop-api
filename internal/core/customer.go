@@ -1,13 +1,13 @@
 package core
 
 type Customer struct {
-	CustomerId        int    `json:"customer_id"`
-	FirstName         string `json:"first_name"`
-	LastName          string `json:"last_name,omitempty"`
-	Patronymic        string `json:"patronymic,omitempty"`
-	TelephoneNumber   string `json:"telephone_number"`
-	AccountId         int    `json:"account_id"`
-	DeliveryAddressId int    `json:"delivery_address_id"`
+	CustomerId        int     `json:"customer_id"`
+	FirstName         string  `json:"first_name"`
+	LastName          *string `json:"last_name,omitempty"`
+	Patronymic        *string `json:"patronymic,omitempty"`
+	TelephoneNumber   string  `json:"telephone_number"`
+	AccountId         *int    `json:"account_id,omitempty"`
+	DeliveryAddressId *int    `json:"delivery_address_id,omitempty"`
 }
 
 //type Customer struct {
@@ -30,7 +30,7 @@ type Customer struct {
 //		House      string `json:"house"`
 //		Apartment  string `json:"apartment"`
 //	}
-type GetCustomreDTO struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
+//type GetCustomreDTO struct {
+//	ID   int    `json:"id"`
+//	Name string `json:"name"`
+//}
