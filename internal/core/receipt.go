@@ -1,8 +1,8 @@
 package core
 
 type Receipt struct {
-	ReceiptId       int
-	OrderDate       string
-	PaymentDetails  string
-	PaymentMethodId int
+	ReceiptId       int    `json:"receipt_id"`
+	OrderDate       string `json:"order_date"`
+	PaymentDetails  string `json:"payment_details"`
+	PaymentMethodId int    `json:"payment_method_id"`
 }

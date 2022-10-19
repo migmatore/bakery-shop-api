@@ -1,8 +1,8 @@
 package core
 
 type RecipeIngredient struct {
-	RecipeIngredientId int
-	RecipeId           int
-	IngredientId       int
-	Quantity           int
+	RecipeIngredientId int `json:"recipe_ingredient_id"`
+	RecipeId           int `json:"recipe_id"`
+	IngredientId       int `json:"ingredient_id"`
+	Quantity           int `json:"quantity"`
 }

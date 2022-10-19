@@ -12,7 +12,7 @@ type Config struct {
 	Listen        struct {
 		Type   string `env:"LISTEN_TYPE" env-default:"port"`
 		BindIP string `env:"BIND_IP" env-default:"0.0.0.0"`
-		Port   string `env:"PORT" env-default:"10000"`
+		Port   string `env:"PORT" env-default:"8081"`
 	}
 	DBConnection struct {
 		Username string `env:"DB_USERNAME" env-default:"migmatore"`

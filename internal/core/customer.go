@@ -3,7 +3,7 @@ package core
 type Customer struct {
 	CustomerId        int     `json:"customer_id"`
 	FirstName         string  `json:"first_name"`
-	LastName          *string `json:"last_name,omitempty"`
+	LastName          string  `json:"last_name"`
 	Patronymic        *string `json:"patronymic,omitempty"`
 	TelephoneNumber   string  `json:"telephone_number"`
 	AccountId         *int    `json:"account_id,omitempty"`

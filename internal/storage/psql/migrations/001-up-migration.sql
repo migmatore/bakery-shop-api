@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS employees
 (
     employee_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     first_name       VARCHAR(50)  NOT NULL,
-    last_name        VARCHAR(50)  NULL,
+    last_name        VARCHAR(50)  NOT NULL,
     patronymic       VARCHAR(50)  NULL,
     telephone_number VARCHAR(100) NOT NULL,
     account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS ingredients
 (
     ingredient_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name               VARCHAR(100) NOT NULL,
-    description        VARCHAR(250),
+    description        VARCHAR(250) NULL,
     remaining_quantity INTEGER      NOT NULL,
     supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE
 );
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS customers
 (
     customer_id         INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     first_name          VARCHAR(50)  NOT NULL,
-    last_name           VARCHAR(50)  NULL,
+    last_name           VARCHAR(50)  NOT NULL,
     patronymic          VARCHAR(50)  NULL,
     telephone_number    VARCHAR(100) NOT NULL,
     account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
