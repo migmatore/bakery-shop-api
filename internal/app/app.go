@@ -40,11 +40,13 @@ func (a *App) Run() {
 	a.logger.Info("Services initializing...")
 	services := service.New(service.Deps{
 		CustomerStorage: storages.Customer,
+		ProductStorage:  storages.Product,
 	})
 
 	a.logger.Info("Handlers initializing...")
 	restHandlers := handler.New(handler.Deps{
 		CustomerService: services.Customer,
+		ProductService:  services.Product,
 	})
 
 	app := restHandlers.Init()

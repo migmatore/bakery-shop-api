@@ -8,16 +8,19 @@ import (
 
 type Deps struct {
 	CustomerService CustomerService
+	ProductService  ProductService
 }
 
 type Handler struct {
 	app      *fiber.App
 	Customer *CustomerHandler
+	Product  *ProductHandler
 }
 
 func New(deps Deps) *Handler {
 	return &Handler{
 		Customer: NewCustomerHandler(deps.CustomerService),
+		Product:  NewProductHandler(deps.ProductService),
 	}
 }
 
@@ -33,6 +36,8 @@ func (h *Handler) Init() *fiber.App {
 
 	v1.Get("/customer/:id", h.Customer.GetById)
 	v1.Get("/customers", h.Customer.GetAll)
+
+	v1.Get("/products", h.Product.GetAll)
 
 	return h.app
 }

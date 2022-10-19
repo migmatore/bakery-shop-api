@@ -7,8 +7,12 @@ import (
 
 type Storage struct {
 	Customer *CustomerStorage
+	Product  *ProductStorage
 }
 
 func New(db *pgxpool.Pool, logger *logging.Logger) *Storage {
-	return &Storage{Customer: NewCustomerStorage(db, logger)}
+	return &Storage{
+		Customer: NewCustomerStorage(db, logger),
+		Product:  NewProductStorage(db, logger),
+	}
 }

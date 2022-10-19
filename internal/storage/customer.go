@@ -37,7 +37,7 @@ func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, 
 func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error) {
 	q := `select customer_id, first_name, last_name, telephone_number from customers`
 
-	c := make([]*core.Customer, 0)
+	customers := make([]*core.Customer, 0)
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
@@ -48,16 +48,16 @@ func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error)
 	defer rows.Close()
 
 	for rows.Next() {
-		_c := core.Customer{}
+		customer := core.Customer{}
 
-		err = rows.Scan(&_c.CustomerId, &_c.FirstName, &_c.LastName, &_c.TelephoneNumber)
+		err := rows.Scan(&customer.CustomerId, &customer.FirstName, &customer.LastName, &customer.TelephoneNumber)
 		if err != nil {
 			s.logger.Errorf("Query error. %v", err)
 			return nil, err
 		}
 
-		c = append(c, &_c)
+		customers = append(customers, &customer)
 	}
 
-	return c, nil
+	return customers, nil
 }
