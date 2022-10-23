@@ -9,12 +9,11 @@ import (
 )
 
 type CustomerStorage struct {
-	pool   *pgxpool.Pool
-	logger *logging.Logger
+	pool *pgxpool.Pool
 }
 
-func NewCustomerStorage(pool *pgxpool.Pool, logger *logging.Logger) *CustomerStorage {
-	return &CustomerStorage{pool: pool, logger: logger}
+func NewCustomerStorage(pool *pgxpool.Pool) *CustomerStorage {
+	return &CustomerStorage{pool: pool}
 }
 
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {
@@ -23,11 +22,11 @@ func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, 
 
 	if err := s.pool.QueryRow(ctx, q, id).Scan(&c.CustomerId, &c.FirstName, &c.TelephoneNumber); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
-			s.logger.Errorf("Error: %v", err)
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
 		}
 
-		s.logger.Errorf("Query error. %v", err)
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
 		return nil, err
 	}
 
@@ -41,7 +40,7 @@ func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error)
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
-		s.logger.Errorf("Query error. %v", err)
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
 		return nil, err
 	}
 
@@ -52,7 +51,7 @@ func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error)
 
 		err := rows.Scan(&customer.CustomerId, &customer.FirstName, &customer.LastName, &customer.TelephoneNumber)
 		if err != nil {
-			s.logger.Errorf("Query error. %v", err)
+			logging.GetLogger(ctx).Errorf("Query error. %v", err)
 			return nil, err
 		}
 

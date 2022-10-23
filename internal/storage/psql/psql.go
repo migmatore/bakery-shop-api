@@ -11,7 +11,7 @@ import (
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
 
-func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config, logger *logging.Logger) (*pgxpool.Pool, error) {
+func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config) (*pgxpool.Pool, error) {
 	var err error
 	var pool *pgxpool.Pool
 
@@ -31,12 +31,12 @@ func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config, logge
 
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
-			logger.Errorf("DB connection error. %v", err)
+			logging.GetLogger(ctx).Errorf("DB connection error. %v", err)
 			return err
 		}
 
 		if err := pool.Ping(ctx); err != nil {
-			logger.Errorf("DB ping error. %v\n", err)
+			logging.GetLogger(ctx).Errorf("DB ping error. %v\n", err)
 			return err
 		}
 
@@ -47,7 +47,7 @@ func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config, logge
 }
 
 // Reconnect Auto reconnecting to db
-func Reconnect(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, logger *logging.Logger) {
+func Reconnect(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) {
 	dsn := fmt.Sprintf(
 		"postgresql://%s:%s@%s:%s/%s?pool_max_conns=%s",
 		cfg.DBConnection.Username,
@@ -66,7 +66,7 @@ func Reconnect(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, logg
 			if pool != nil {
 				p, err := pgxpool.Connect(ctx, dsn)
 				if err != nil {
-					logger.Errorf("DB reconnection error. %v", err)
+					logging.GetLogger(ctx).Errorf("DB reconnection error. %v", err)
 					time.Sleep(1 * time.Second)
 
 					continue

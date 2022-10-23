@@ -1,24 +1,32 @@
 package main
 
 import (
+	"context"
 	"github.com/migmatore/bakery-shop-api/internal/app"
 	"github.com/migmatore/bakery-shop-api/internal/config"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
-	"log"
 )
 
 func main() {
-	log.Print("Config initializing")
-	cfg := config.GetConfig()
+	//defer fgtrace.Config{Dst: fgtrace.File("fgtrace.json")}.Trace().Stop()
 
-	log.Print("Logger initializing")
-	logger := logging.GetLogger(cfg.AppConfig.LogLevel)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	app, err := app.NewApp(cfg, logger)
+	logger := logging.GetLogger(ctx)
+	ctx = logging.ContextWithLogger(ctx, logger)
+	logger.Info("Logger initializing")
+
+	logger.Info("Config initializing")
+	cfg := config.GetConfig(ctx)
+
+	logger.SetLoggingLevel(cfg.AppConfig.LogLevel)
+
+	a, err := app.NewApp(cfg)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatalln(err)
 	}
 
-	app.Run()
+	a.Run(ctx)
 
 }

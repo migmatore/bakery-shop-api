@@ -23,7 +23,7 @@ func NewCustomerHandler(s CustomerService) *CustomerHandler {
 
 // GetById TODO handle context timeout errors
 func (h *CustomerHandler) GetById(c *fiber.Ctx) error {
-	ctx := context.TODO()
+	ctx := c.UserContext()
 	ctx, cancel := context.WithTimeout(ctx, 10000*time.Millisecond)
 	defer cancel()
 
@@ -42,7 +42,7 @@ func (h *CustomerHandler) GetById(c *fiber.Ctx) error {
 
 // GetAll TODO handle context timeout errors
 func (h *CustomerHandler) GetAll(c *fiber.Ctx) error {
-	ctx := context.TODO()
+	ctx := c.UserContext()
 	ctx, cancel := context.WithTimeout(ctx, 11000*time.Millisecond)
 	defer cancel()
 

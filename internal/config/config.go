@@ -1,8 +1,9 @@
 package config
 
 import (
+	"context"
 	"github.com/ilyakaznacheev/cleanenv"
-	"log"
+	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"sync"
 )
 
@@ -30,9 +31,9 @@ type Config struct {
 var instance *Config
 var once sync.Once
 
-func GetConfig() *Config {
+func GetConfig(ctx context.Context) *Config {
 	once.Do(func() {
-		log.Print("gather config")
+		logging.GetLogger(ctx).Info("gather config")
 
 		instance = &Config{}
 
@@ -40,8 +41,8 @@ func GetConfig() *Config {
 			var title = "Bakery management system"
 			help, _ := cleanenv.GetDescription(instance, &title)
 
-			log.Print(help)
-			log.Fatal(err)
+			logging.GetLogger(ctx).Info(help)
+			logging.GetLogger(ctx).Fatal(err)
 		}
 	})
 

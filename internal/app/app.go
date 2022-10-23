@@ -12,46 +12,45 @@ import (
 )
 
 type App struct {
-	cfg    *config.Config
-	logger *logging.Logger
+	cfg *config.Config
 }
 
-func NewApp(cfg *config.Config, logger *logging.Logger) (App, error) {
+func NewApp(cfg *config.Config) (App, error) {
 	return App{
-		cfg: cfg, logger: logger,
+		cfg: cfg,
 	}, nil
 }
 
-func (a *App) Run() {
-	a.logger.Info("Start app initializing...")
+func (a *App) Run(ctx context.Context) {
+	logging.GetLogger(ctx).Info("Start app initializing...")
 
-	a.logger.Info("Database connection initializing...")
-	pool, err := psql.NewPostgres(context.Background(), 3, a.cfg, a.logger)
+	logging.GetLogger(ctx).Info("Database connection initializing...")
+	pool, err := psql.NewPostgres(ctx, 3, a.cfg)
 	if err != nil {
-		a.logger.Fatalf("Failed to initialize db connection: %s", err.Error())
+		logging.GetLogger(ctx).Fatalf("Failed to initialize db connection: %s", err.Error())
 	}
 
-	a.logger.Info("Database reconnection goroutine initializing...")
-	go psql.Reconnect(context.Background(), pool, a.cfg, a.logger)
+	logging.GetLogger(ctx).Info("Database reconnection goroutine initializing...")
+	go psql.Reconnect(ctx, pool, a.cfg)
 
-	a.logger.Info("Storages initializing...")
-	storages := storage.New(pool, a.logger)
+	logging.GetLogger(ctx).Info("Storages initializing...")
+	storages := storage.New(pool)
 
-	a.logger.Info("Services initializing...")
+	logging.GetLogger(ctx).Info("Services initializing...")
 	services := service.New(service.Deps{
 		CustomerStorage: storages.Customer,
 		ProductStorage:  storages.Product,
 	})
 
-	a.logger.Info("Handlers initializing...")
+	logging.GetLogger(ctx).Info("Handlers initializing...")
 	restHandlers := handler.New(handler.Deps{
 		CustomerService: services.Customer,
 		ProductService:  services.Product,
 	})
 
-	app := restHandlers.Init()
+	app := restHandlers.Init(ctx)
 
-	a.logger.Info("Server starting...")
-	srv := rest.NewServer(a.cfg.Listen.BindIP+":"+a.cfg.Listen.Port, app, pool, a.logger)
-	srv.StartWithGracefulShutdown()
+	logging.GetLogger(ctx).Info("Server starting...")
+	srv := rest.NewServer(a.cfg.Listen.BindIP+":"+a.cfg.Listen.Port, app, pool)
+	srv.StartWithGracefulShutdown(ctx)
 }

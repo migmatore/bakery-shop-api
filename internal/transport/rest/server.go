@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"os"
@@ -10,28 +11,26 @@ import (
 )
 
 type Server struct {
-	logger *logging.Logger
-	app    *fiber.App
-	addr   string
-	pool   *pgxpool.Pool
+	app  *fiber.App
+	addr string
+	pool *pgxpool.Pool
 }
 
-func NewServer(addr string, app *fiber.App, pool *pgxpool.Pool, logger *logging.Logger) *Server {
+func NewServer(addr string, app *fiber.App, pool *pgxpool.Pool) *Server {
 	return &Server{
-		app:    app,
-		addr:   addr,
-		pool:   pool,
-		logger: logger,
+		app:  app,
+		addr: addr,
+		pool: pool,
 	}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start(ctx context.Context) {
 	if err := s.app.Listen(s.addr); err != nil {
-		s.logger.Fatalf("Server is not running! Reason: %v", err)
+		logging.GetLogger(ctx).Fatalf("Server is not running! Reason: %v", err)
 	}
 }
 
-func (s *Server) StartWithGracefulShutdown() {
+func (s *Server) StartWithGracefulShutdown(ctx context.Context) {
 	idleConnsClosed := make(chan struct{})
 
 	go func() {
@@ -39,21 +38,21 @@ func (s *Server) StartWithGracefulShutdown() {
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 
-		s.logger.Info("Close all database connections...")
+		logging.GetLogger(ctx).Info("Close all database connections...")
 		s.pool.Close()
-		s.logger.Info("All database connections have been closed!")
+		logging.GetLogger(ctx).Info("All database connections have been closed!")
 
 		if err := s.app.Shutdown(); err != nil {
-			s.logger.Errorf("Server is not shutting down! Reason: %v", err)
+			logging.GetLogger(ctx).Errorf("Server is not shutting down! Reason: %v", err)
 		}
 
-		s.logger.Info("Server has successfully shut down!")
+		logging.GetLogger(ctx).Info("Server has successfully shut down!")
 
 		close(idleConnsClosed)
 	}()
 
 	if err := s.app.Listen(s.addr); err != nil {
-		s.logger.Fatalf("Server is not running! Reason: %v", err)
+		logging.GetLogger(ctx).Fatalf("Server is not running! Reason: %v", err)
 	}
 
 	<-idleConnsClosed

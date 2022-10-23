@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
@@ -24,11 +25,16 @@ func New(deps Deps) *Handler {
 	}
 }
 
-func (h *Handler) Init() *fiber.App {
+func (h *Handler) Init(ctx context.Context) *fiber.App {
 	h.app = fiber.New()
 
 	//h.app.Use(cors.New())
 	h.app.Use(logger.New())
+	h.app.Use(func(c *fiber.Ctx) error {
+		c.SetUserContext(ctx)
+
+		return c.Next()
+	})
 	h.app.Get("/metrics", monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
 
 	api := h.app.Group("/api")

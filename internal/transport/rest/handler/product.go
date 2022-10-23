@@ -20,7 +20,10 @@ func NewProductHandler(s ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
-	products, err := h.service.GetAll(context.Background())
+	ctx := c.UserContext()
+	//_ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
+	//defer cancel()
+	products, err := h.service.GetAll(ctx)
 	if err != nil {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}

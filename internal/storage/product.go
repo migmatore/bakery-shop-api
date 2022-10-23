@@ -12,18 +12,20 @@ type ProductStorage struct {
 	logger *logging.Logger
 }
 
-func NewProductStorage(pool *pgxpool.Pool, logger *logging.Logger) *ProductStorage {
-	return &ProductStorage{pool: pool, logger: logger}
+func NewProductStorage(pool *pgxpool.Pool) *ProductStorage {
+	return &ProductStorage{pool: pool}
 }
 
 func (s *ProductStorage) FindAll(ctx context.Context) ([]*core.Product, error) {
-	q := `select * from products`
+	q := `SELECT product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
+                 manufacturer_id
+		  FROM products`
 
 	products := make([]*core.Product, 0)
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
-		s.logger.Errorf("Query error. %v", err)
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
 		return nil, err
 	}
 
@@ -36,11 +38,15 @@ func (s *ProductStorage) FindAll(ctx context.Context) ([]*core.Product, error) {
 			&product.ManufacturingDate, &product.ExpirationDate, &product.CategoryId, &product.RecipeId,
 			&product.ManufacturerId)
 		if err != nil {
-			s.logger.Errorf("Query error. %v", err)
+			logging.GetLogger(ctx).Errorf("Query error. %v", err)
 			return nil, err
 		}
 
 		products = append(products, &product)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return products, nil
