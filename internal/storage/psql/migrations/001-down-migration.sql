@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS ingredients;
 DROP TABLE IF EXISTS employees;
 DROP TABLE IF EXISTS manufacturers;
 DROP TABLE IF EXISTS suppliers;
+DROP TABLE IF EXISTS company_addresses;
 DROP TABLE IF EXISTS receipts;
 DROP TABLE IF EXISTS payment_methods;
 DROP TABLE IF EXISTS order_statuses;

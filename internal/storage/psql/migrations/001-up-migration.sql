@@ -13,19 +13,30 @@ CREATE TABLE IF NOT EXISTS recipes
     notes       TEXT         NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS company_addresses
+(
+    company_address_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    region             VARCHAR(200) NOT NULL,
+    city               VARCHAR(200) NOT NULL,
+    street             VARCHAR(200) NOT NULL,
+    house_number       VARCHAR(10)  NULL,
+    building_number    VARCHAR(5)   NULL
+);
+
 CREATE TABLE IF NOT EXISTS suppliers
 (
-    supplier_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name             VARCHAR(100) NOT NULL UNIQUE,
-    address          VARCHAR(150) NOT NULL,
-    telephone_number VARCHAR(100) NOT NULL
+    supplier_id        INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name               VARCHAR(100) NOT NULL UNIQUE,
+    company_address_id INTEGER      NULL REFERENCES company_addresses (company_address_id) ON DELETE SET NULL,
+    telephone_number   VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS manufacturers
 (
-    manufacturer_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name            VARCHAR(150) NOT NULL UNIQUE,
-    supplier_id     INTEGER      NULL REFERENCES suppliers (supplier_id) ON DELETE SET NULL
+    manufacturer_id    INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name               VARCHAR(150) NOT NULL UNIQUE,
+    company_address_id INTEGER      NULL REFERENCES company_addresses (company_address_id) ON DELETE SET NULL,
+    supplier_id        INTEGER      NULL REFERENCES suppliers (supplier_id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS positions
@@ -162,3 +173,4 @@ VALUES ('В обработке'),
 INSERT INTO delivery_methods(name)
 VALUES ('Самомывоз'),
        ('Курьер');
+
