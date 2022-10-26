@@ -43,6 +43,7 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	v1.Get("/customer/:id", h.Customer.GetById)
 	v1.Get("/customers", h.Customer.GetAll)
 
+	v1.Get("/product/:id", h.Product.GetOne)
 	v1.Get("/products", h.Product.GetAll)
 
 	return h.app

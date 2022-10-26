@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS employee_accounts
 (
     employee_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email               VARCHAR(100) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64)  NOT NULL UNIQUE
+    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
+    salt                VARCHAR(10)  NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS employees
@@ -125,7 +126,8 @@ CREATE TABLE IF NOT EXISTS customer_accounts
 (
     customer_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email               VARCHAR(100) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64)  NOT NULL UNIQUE
+    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
+    salt                VARCHAR(10)  NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS delivery_addresses
@@ -173,4 +175,3 @@ VALUES ('В обработке'),
 INSERT INTO delivery_methods(name)
 VALUES ('Самомывоз'),
        ('Курьер');
-
