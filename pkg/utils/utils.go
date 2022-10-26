@@ -5,7 +5,23 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgconn"
+	"time"
 )
+
+func DoWithTries(fn func() error, attempts int, delay time.Duration) (err error) {
+	for attempts > 0 {
+		if err = fn(); err != nil {
+			time.Sleep(delay)
+			attempts--
+
+			continue
+		}
+
+		return nil
+	}
+
+	return
+}
 
 func ParsePgError(err error) error {
 	var pgErr *pgconn.PgError
@@ -23,4 +39,19 @@ func FiberError(ctx *fiber.Ctx, status int, err error) error {
 	return ctx.Status(status).JSON(fiber.Map{
 		"message": err.Error(),
 	})
+}
+
+type QueryParam struct {
+	Name  string
+	Value string
+}
+
+func GetQueryParams(c *fiber.Ctx, paramName ...string) *[]QueryParam {
+	p := make([]QueryParam, 0)
+
+	for _, name := range paramName {
+		p = append(p, QueryParam{Name: name, Value: c.Query(name)})
+	}
+
+	return &p
 }

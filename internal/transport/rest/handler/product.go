@@ -9,7 +9,7 @@ import (
 
 type ProductService interface {
 	GetOne(ctx context.Context, id int) (*core.Product, error)
-	GetAll(ctx context.Context) ([]*core.Product, error)
+	GetAll(ctx context.Context, queryParams *[]utils.QueryParam) ([]*core.Product, error)
 }
 
 type ProductHandler struct {
@@ -38,12 +38,31 @@ func (h *ProductHandler) GetOne(c *fiber.Ctx) error {
 
 func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	//_ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
 	//defer cancel()
-	products, err := h.service.GetAll(ctx)
+
+	type filterOption struct {
+		OptionName   string
+		FilterOption string
+		Value        string
+	}
+
+	//[]queryParam{
+	//	{Name: "name", Value: c.Query("name")},
+	//	{Name: "price", Value: c.Query("price")},
+	//	{Name: "sort_by", Value: c.Query("sort_by")},
+	//	{Name: "sort_order", Value: c.Query("sort_order")},
+	//}
+
+	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date", "category",
+		"manufacturer", "sort_by", "sort_order")
+
+	products, err := h.service.GetAll(ctx, queryParams)
 	if err != nil {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(products)
+	//return c.Status(fiber.StatusOK).JSON(p)
 }
