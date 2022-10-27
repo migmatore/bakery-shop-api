@@ -41,17 +41,27 @@ func FiberError(ctx *fiber.Ctx, status int, err error) error {
 	})
 }
 
-type QueryParam struct {
-	Name  string
-	Value string
-}
+//type QueryParam struct {
+//	Name  string
+//	Value string
+//}
+//
+//func GetQueryParams1(c *fiber.Ctx, paramName ...string) *[]QueryParam {
+//	p := make([]QueryParam, 0)
+//
+//	for _, name := range paramName {
+//		p = append(p, QueryParam{Name: name, Value: c.Query(name)})
+//	}
+//
+//	return &p
+//}
 
-func GetQueryParams(c *fiber.Ctx, paramName ...string) *[]QueryParam {
-	p := make([]QueryParam, 0)
+func GetQueryParams(c *fiber.Ctx, paramName ...string) map[string]string {
+	p := make(map[string]string)
 
 	for _, name := range paramName {
-		p = append(p, QueryParam{Name: name, Value: c.Query(name)})
+		p[name] = c.Query(name)
 	}
 
-	return &p
+	return p
 }

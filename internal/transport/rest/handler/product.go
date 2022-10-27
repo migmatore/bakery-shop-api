@@ -9,7 +9,7 @@ import (
 
 type ProductService interface {
 	GetOne(ctx context.Context, id int) (*core.Product, error)
-	GetAll(ctx context.Context, queryParams *[]utils.QueryParam) ([]*core.Product, error)
+	GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error)
 }
 
 type ProductHandler struct {
@@ -54,6 +54,9 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	//	{Name: "sort_by", Value: c.Query("sort_by")},
 	//	{Name: "sort_order", Value: c.Query("sort_order")},
 	//}
+
+	//queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date", "category",
+	//	"manufacturer", "sort_by", "sort_order")
 
 	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date", "category",
 		"manufacturer", "sort_by", "sort_order")

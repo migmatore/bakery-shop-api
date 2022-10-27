@@ -38,7 +38,7 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 	return &product, nil
 }
 
-func (s *ProductStorage) FindAll(ctx context.Context) ([]*core.Product, error) {
+func (s *ProductStorage) FindAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error) {
 	q := `SELECT product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
                  manufacturer_id
 		  FROM products`
