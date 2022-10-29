@@ -42,12 +42,6 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	//_ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
 	//defer cancel()
 
-	type filterOption struct {
-		OptionName   string
-		FilterOption string
-		Value        string
-	}
-
 	//[]queryParam{
 	//	{Name: "name", Value: c.Query("name")},
 	//	{Name: "price", Value: c.Query("price")},

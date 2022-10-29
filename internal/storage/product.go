@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/internal/core"
+	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
+	"github.com/migmatore/bakery-shop-api/pkg/api/sort"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
@@ -38,10 +40,13 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 	return &product, nil
 }
 
-func (s *ProductStorage) FindAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error) {
+func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error) {
 	q := `SELECT product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
                  manufacturer_id
 		  FROM products`
+
+	q = filter.EnrichQueryWithFilter(q, filterOptions)
+	q = sort.EnrichQueryWithSort(q, sortOption)
 
 	products := make([]*core.Product, 0)
 
