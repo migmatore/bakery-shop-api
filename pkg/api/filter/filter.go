@@ -74,10 +74,12 @@ func enrichQueryWIthStringOperator(operator string, value string) (q string) {
 		q = "<> " + value
 	case "lk":
 		q = "LIKE '" + value + "'"
-	case "in": // TODO in with strings
-		q = "IN (" + value + ")"
+	case "in":
+		s := strings.Split(value, ",")
+		q = "IN ('" + strings.Join(s, "','") + "')"
 	case "nin":
-		q = "NOT IN (" + value + ")"
+		s := strings.Split(value, ",")
+		q = "NOT IN ('" + strings.Join(s, "','") + "')"
 	}
 
 	return
