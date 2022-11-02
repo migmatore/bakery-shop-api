@@ -13,3 +13,14 @@ type Product struct {
 	RecipeId          *int        `json:"recipe_id,omitempty"`
 	ManufacturerId    int         `json:"manufacturer_id"`
 }
+
+type PatchProduct struct {
+	Name              *string      `json:"name,omitempty"`
+	Description       *string      `json:"description,omitempty"`
+	Price             *float64     `json:"price,omitempty"`
+	ManufacturingDate *pgtype.Date `json:"manufacturing_date,omitempty"`
+	ExpirationDate    *pgtype.Date `json:"expiration_date,omitempty"`
+	CategoryId        *int         `json:"category_id,omitempty"`
+	RecipeId          *int         `json:"recipe_id,omitempty"`
+	ManufacturerId    *int         `json:"manufacturer_id,omitempty"`
+}

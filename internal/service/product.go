@@ -5,12 +5,12 @@ import (
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
 	"github.com/migmatore/bakery-shop-api/pkg/api/sort"
-	"github.com/migmatore/bakery-shop-api/pkg/logging"
 )
 
 type ProductStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Product, error)
 	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error)
+	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
 }
 
 type ProductService struct {
@@ -26,15 +26,19 @@ func (s *ProductService) GetOne(ctx context.Context, id int) (*core.Product, err
 }
 
 func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error) {
-	logging.GetLogger(ctx).Infof("%v", queryParams)
+	//logging.GetLogger(ctx).Infof("%v", queryParams)
 
 	filterOptions := filter.GetFilterOptions(queryParams)
 
-	logging.GetLogger(ctx).Infof("%v", filterOptions)
+	//logging.GetLogger(ctx).Infof("%v", filterOptions)
 
 	sortOption := sort.GetSortOptions(queryParams)
 
-	logging.GetLogger(ctx).Infof("%s %s", sortOption.Column, sortOption.Order)
+	//logging.GetLogger(ctx).Infof("%s %s", sortOption.Column, sortOption.Order)
 
 	return s.storage.FindAll(ctx, filterOptions, sortOption)
+}
+
+func (s *ProductService) Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error) {
+	return s.storage.Patch(ctx, id, product)
 }

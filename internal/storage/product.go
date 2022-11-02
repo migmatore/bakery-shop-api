@@ -2,12 +2,14 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
 	"github.com/migmatore/bakery-shop-api/pkg/api/sort"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
+	"strings"
 )
 
 type ProductStorage struct {
@@ -77,4 +79,42 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 	}
 
 	return products, nil
+}
+
+func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error) {
+	q := `UPDATE products SET `
+	qCols := make([]string, 0)
+	qArgs := make([]interface{}, 0)
+
+	if product.Name != nil {
+		qCols = append(qCols, fmt.Sprintf(`name = $%d`, len(qCols)+1))
+		qArgs = append(qArgs, product.Name)
+	}
+
+	if product.Price != nil {
+		qCols = append(qCols, fmt.Sprintf(`price = $%d`, len(qCols)+1))
+		qArgs = append(qArgs, product.Price)
+	}
+
+	q += strings.Join(qCols, ",") + fmt.Sprintf(` WHERE product_id = $%d`, len(qArgs)+1)
+	qArgs = append(qArgs, id)
+
+	q += ` RETURNING product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
+           manufacturer_id`
+
+	newProduct := core.Product{}
+
+	if err := s.pool.QueryRow(ctx, q, qArgs...).Scan(&newProduct.ProductId, &newProduct.Name, &newProduct.Description, &newProduct.Price,
+		&newProduct.ManufacturingDate, &newProduct.ExpirationDate, &newProduct.CategoryId, &newProduct.RecipeId,
+		&newProduct.ManufacturerId); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return nil, err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return nil, err
+	}
+
+	return &newProduct, nil
 }
