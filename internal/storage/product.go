@@ -102,9 +102,27 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 	if product.Name != nil {
 		updateQuery.AddUpdateColumn("name", product.Name)
 	}
-
+	if product.Description != nil {
+		updateQuery.AddUpdateColumn("description", product.Description)
+	}
 	if product.Price != nil {
 		updateQuery.AddUpdateColumn("price", product.Price)
+	}
+	if product.ManufacturingDate != nil {
+		updateQuery.AddUpdateColumn("manufacturing_date", product.ManufacturingDate)
+	}
+	if product.ExpirationDate != nil {
+		updateQuery.AddUpdateColumn("expiration_date", product.ExpirationDate)
+	}
+	if product.CategoryId != nil {
+		updateQuery.AddUpdateColumn("category_id", product.CategoryId)
+	}
+	if product.RecipeId != nil {
+		updateQuery.AddUpdateColumn("price", product.RecipeId)
+	}
+	// TODO set current manufacturer id
+	if product.ManufacturerId != nil {
+		updateQuery.AddUpdateColumn("manufacturer_id", product.ManufacturerId)
 	}
 
 	updateQuery.AddWhere("product_id", id)
