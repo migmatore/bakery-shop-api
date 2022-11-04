@@ -14,6 +14,6 @@ DROP TABLE IF EXISTS order_statuses;
 DROP TABLE IF EXISTS delivery_methods;
 DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS delivery_addresses;
-DROP TABLE IF EXISTS customer_accounts;
-DROP TABLE IF EXISTS employee_accounts;
+-- DROP TABLE IF EXISTS customer_accounts;
+-- DROP TABLE IF EXISTS employee_accounts;
 DROP TABLE IF EXISTS positions;

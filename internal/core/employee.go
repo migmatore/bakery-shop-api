@@ -6,7 +6,8 @@ type Employee struct {
 	LastName        string  `json:"last_name"`
 	Patronymic      *string `json:"patronymic,omitempty"`
 	TelephoneNumber string  `json:"telephone_number"`
-	AccountId       int     `json:"account_id"`
+	Email           string  `json:"email"`
+	PasswordHash    string  `json:"password_hash"`
 	PositionId      int     `json:"position_id"`
 	CompanyId       int     `json:"company_id"`
 }

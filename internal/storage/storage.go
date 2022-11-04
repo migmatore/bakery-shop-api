@@ -9,9 +9,9 @@ type Storage struct {
 	Product  *ProductStorage
 }
 
-func New(db *pgxpool.Pool) *Storage {
+func New(pool *pgxpool.Pool) *Storage {
 	return &Storage{
-		Customer: NewCustomerStorage(db),
-		Product:  NewProductStorage(db),
+		Customer: NewCustomerStorage(pool),
+		Product:  NewProductStorage(pool),
 	}
 }

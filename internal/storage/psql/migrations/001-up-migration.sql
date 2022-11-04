@@ -46,13 +46,12 @@ CREATE TABLE IF NOT EXISTS positions
     description VARCHAR(250) NULL
 );
 
-CREATE TABLE IF NOT EXISTS employee_accounts
-(
-    employee_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    email               VARCHAR(100) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
-    salt                VARCHAR(10)  NOT NULL UNIQUE
-);
+-- CREATE TABLE IF NOT EXISTS employee_accounts
+-- (
+--     employee_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+--     email               VARCHAR(100) NOT NULL UNIQUE,
+--     password_hash       VARCHAR(64)  NOT NULL UNIQUE
+-- );
 
 CREATE TABLE IF NOT EXISTS employees
 (
@@ -61,7 +60,9 @@ CREATE TABLE IF NOT EXISTS employees
     last_name        VARCHAR(50)  NOT NULL,
     patronymic       VARCHAR(50)  NULL,
     telephone_number VARCHAR(100) NOT NULL,
-    account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
+--     account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
+    email            VARCHAR(100) NOT NULL UNIQUE,
+    password_hash    VARCHAR(64)  NOT NULL UNIQUE,
     position_id      INTEGER      NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
     company_id       INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
 );
@@ -122,13 +123,12 @@ CREATE TABLE IF NOT EXISTS delivery_methods
     name               VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS customer_accounts
-(
-    customer_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    email               VARCHAR(100) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
-    salt                VARCHAR(10)  NOT NULL UNIQUE
-);
+-- CREATE TABLE IF NOT EXISTS customer_accounts
+-- (
+--     customer_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+--     email               VARCHAR(100) NOT NULL UNIQUE,
+--     password_hash       VARCHAR(64)  NOT NULL UNIQUE
+-- );
 
 CREATE TABLE IF NOT EXISTS delivery_addresses
 (
@@ -148,7 +148,9 @@ CREATE TABLE IF NOT EXISTS customers
     last_name           VARCHAR(50)  NOT NULL,
     patronymic          VARCHAR(50)  NULL,
     telephone_number    VARCHAR(100) NOT NULL,
-    account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
+--     account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
+    email               VARCHAR(100) NOT NULL UNIQUE,
+    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
     delivery_address_id INTEGER      NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL
 );
 

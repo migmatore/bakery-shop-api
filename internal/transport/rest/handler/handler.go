@@ -8,21 +8,18 @@ import (
 )
 
 type Deps struct {
-	AccountService  AccountService
 	CustomerService CustomerService
 	ProductService  ProductService
 }
 
 type Handler struct {
 	app      *fiber.App
-	Account  *AccountHandler
 	Customer *CustomerHandler
 	Product  *ProductHandler
 }
 
 func New(deps Deps) *Handler {
 	return &Handler{
-		Account:  NewAccountHandler(deps.AccountService),
 		Customer: NewCustomerHandler(deps.CustomerService),
 		Product:  NewProductHandler(deps.ProductService),
 	}
@@ -43,8 +40,8 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")
 
-	v1.Post("/signin", h.Account.Signin)
-	v1.Post("/signup", h.Account.Signup)
+	v1.Post("/customer/signin", h.Customer.Signin)
+	v1.Post("/customer/signup", h.Customer.Signup)
 
 	v1.Get("/customer/:id", h.Customer.GetById)
 	v1.Get("/customers", h.Customer.GetAll)

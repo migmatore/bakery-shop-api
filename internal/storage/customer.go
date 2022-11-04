@@ -16,6 +16,35 @@ func NewCustomerStorage(pool *pgxpool.Pool) *CustomerStorage {
 	return &CustomerStorage{pool: pool}
 }
 
+func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (int, error) {
+	q := `INSERT INTO customers(first_name, last_name, patronymic, telephone_number, email, password_hash) 
+		  VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING customer_id`
+
+	var id int
+	// TODO add delivery address
+	if err := s.pool.QueryRow(
+		ctx,
+		q,
+		customer.FirstName,
+		customer.LastName,
+		customer.Patronymic,
+		customer.TelephoneNumber,
+		customer.Email,
+		customer.Password,
+	).Scan(&id); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return 0, err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return 0, err
+	}
+
+	return id, nil
+}
+
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {
 	q := `select customer_id, first_name, telephone_number from customers where customers.customer_id=$1`
 	var c core.Customer

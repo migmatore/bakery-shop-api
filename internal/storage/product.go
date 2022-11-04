@@ -12,8 +12,7 @@ import (
 )
 
 type ProductStorage struct {
-	pool   *pgxpool.Pool
-	logger *logging.Logger
+	pool *pgxpool.Pool
 }
 
 func NewProductStorage(pool *pgxpool.Pool) *ProductStorage {
