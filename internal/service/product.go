@@ -26,15 +26,8 @@ func (s *ProductService) GetOne(ctx context.Context, id int) (*core.Product, err
 }
 
 func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error) {
-	//logging.GetLogger(ctx).Infof("%v", queryParams)
-
 	filterOptions := filter.GetFilterOptions(queryParams)
-
-	//logging.GetLogger(ctx).Infof("%v", filterOptions)
-
 	sortOption := sort.GetSortOptions(queryParams)
-
-	//logging.GetLogger(ctx).Infof("%s %s", sortOption.Column, sortOption.Order)
 
 	return s.storage.FindAll(ctx, filterOptions, sortOption)
 }

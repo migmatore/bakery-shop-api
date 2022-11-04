@@ -43,18 +43,8 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	//_ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
 	//defer cancel()
 
-	//[]queryParam{
-	//	{Name: "name", Value: c.Query("name")},
-	//	{Name: "price", Value: c.Query("price")},
-	//	{Name: "sort_by", Value: c.Query("sort_by")},
-	//	{Name: "sort_order", Value: c.Query("sort_order")},
-	//}
-
-	//queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date", "category",
-	//	"manufacturer", "sort_by", "sort_order")
-
-	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date", "category",
-		"manufacturer", "sort_by", "sort_order")
+	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date",
+		"category", "manufacturer", "sort_by", "sort_order")
 
 	products, err := h.service.GetAll(ctx, queryParams)
 	if err != nil {
