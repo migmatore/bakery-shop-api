@@ -11,6 +11,16 @@ type Customer struct {
 	DeliveryAddressId *int    `json:"delivery_address_id,omitempty"`
 }
 
+type CreateCustomer struct {
+	FirstName         string  `json:"first_name"`
+	LastName          string  `json:"last_name"`
+	Patronymic        *string `json:"patronymic,omitempty"`
+	TelephoneNumber   string  `json:"telephone_number"`
+	Email             *string `json:"email,omitempty"`
+	PasswordHash      *string `json:"password_hash,omitempty"`
+	DeliveryAddressId *int    `json:"delivery_address_id,omitempty"`
+}
+
 type CreateCustomerWithAccountDTO struct {
 	FirstName       string                    `json:"first_name"`
 	LastName        string                    `json:"last_name"`

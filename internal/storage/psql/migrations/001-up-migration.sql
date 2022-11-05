@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS employees
     patronymic       VARCHAR(50)  NULL,
     telephone_number VARCHAR(100) NOT NULL,
 --     account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
-    email            VARCHAR(100) NOT NULL UNIQUE,
-    password_hash    VARCHAR(64)  NOT NULL UNIQUE,
+    email            VARCHAR(100) NULL UNIQUE,
+    password_hash    VARCHAR(64)  NULL UNIQUE,
     position_id      INTEGER      NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
     company_id       INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
 );
@@ -149,8 +149,8 @@ CREATE TABLE IF NOT EXISTS customers
     patronymic          VARCHAR(50)  NULL,
     telephone_number    VARCHAR(100) NOT NULL,
 --     account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
-    email               VARCHAR(100) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64)  NOT NULL UNIQUE,
+    email               VARCHAR(100) NULL UNIQUE,
+    password_hash       VARCHAR(64)  NULL UNIQUE,
     delivery_address_id INTEGER      NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL
 );
 

@@ -10,34 +10,65 @@ import (
 type CustomerStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Customer, error)
 	FindAll(ctx context.Context) ([]*core.Customer, error)
-	Create(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (int, error)
+	Create(ctx context.Context, customer *core.CreateCustomer) (int, error)
+}
+
+type DeliveryAddressStorage interface {
+	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (int, error)
 }
 
 type CustomerService struct {
-	storage CustomerStorage
+	customerStorage CustomerStorage
+	addressStorage  DeliveryAddressStorage
 }
 
-func NewCustomerService(storage CustomerStorage) *CustomerService {
-	return &CustomerService{storage: storage}
+func NewCustomerService(customerStorage CustomerStorage, addressStorage DeliveryAddressStorage) *CustomerService {
+	return &CustomerService{customerStorage: customerStorage, addressStorage: addressStorage}
 }
 
+// TODO create transaction for customer
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
+	var deliveryAddressId int
+
+	if customer.DeliveryAddress != nil {
+		var err error
+		deliveryAddress := core.CreateDeliveryAddressDTO{
+			Region:          customer.DeliveryAddress.Region,
+			City:            customer.DeliveryAddress.City,
+			Street:          customer.DeliveryAddress.Street,
+			HouseNumber:     customer.DeliveryAddress.HouseNumber,
+			BuildingNumber:  customer.DeliveryAddress.BuildingNumber,
+			ApartmentNumber: customer.DeliveryAddress.ApartmentNumber,
+		}
+
+		deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(ctx, &deliveryAddress)
+		if err != nil {
+			return "", nil
+		}
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 
-	customer.Password = string(hash)
+	strHash := string(hash)
 
-	if customer.DeliveryAddress != nil {
-		// create delivery address record
+	customerModel := core.CreateCustomer{
+		FirstName:         customer.FirstName,
+		LastName:          customer.LastName,
+		Patronymic:        customer.Patronymic,
+		TelephoneNumber:   customer.TelephoneNumber,
+		Email:             &customer.Email,
+		PasswordHash:      &strHash,
+		DeliveryAddressId: &deliveryAddressId,
 	}
 
-	id, err := s.storage.Create(ctx, customer)
+	id, err := s.customerStorage.Create(ctx, &customerModel)
 	if err != nil {
 		return "", nil
 	}
-	// TODO move GenerateNewAccessTOken from middleware package
+	// TODO move GenerateNewAccessToken from middleware package
 	token, err := middleware.GenerateNewAccessToken(id, true)
 	if err != nil {
 		return "", nil
@@ -47,9 +78,9 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 }
 
 func (s *CustomerService) GetById(ctx context.Context, id int) (*core.Customer, error) {
-	return s.storage.FindOne(ctx, id)
+	return s.customerStorage.FindOne(ctx, id)
 }
 
 func (s *CustomerService) GetAll(ctx context.Context) ([]*core.Customer, error) {
-	return s.storage.FindAll(ctx)
+	return s.customerStorage.FindAll(ctx)
 }

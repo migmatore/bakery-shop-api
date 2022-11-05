@@ -38,6 +38,7 @@ func (a *App) Run(ctx context.Context) {
 
 	logging.GetLogger(ctx).Info("Services initializing...")
 	services := service.New(service.Deps{
+		AddressStorage:  storages.Address,
 		CustomerStorage: storages.Customer,
 		ProductStorage:  storages.Product,
 	})

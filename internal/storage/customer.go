@@ -16,9 +16,9 @@ func NewCustomerStorage(pool *pgxpool.Pool) *CustomerStorage {
 	return &CustomerStorage{pool: pool}
 }
 
-func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (int, error) {
-	q := `INSERT INTO customers(first_name, last_name, patronymic, telephone_number, email, password_hash) 
-		  VALUES ($1, $2, $3, $4, $5, $6)
+func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomer) (int, error) {
+	q := `INSERT INTO customers(first_name, last_name, patronymic, telephone_number, email, password_hash, delivery_address_id) 
+		  VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING customer_id`
 
 	var id int
@@ -31,7 +31,8 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		customer.Patronymic,
 		customer.TelephoneNumber,
 		customer.Email,
-		customer.Password,
+		customer.PasswordHash,
+		customer.DeliveryAddressId,
 	).Scan(&id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)

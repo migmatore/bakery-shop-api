@@ -5,12 +5,14 @@ import (
 )
 
 type Storage struct {
+	Address  *AddressStorage
 	Customer *CustomerStorage
 	Product  *ProductStorage
 }
 
 func New(pool *pgxpool.Pool) *Storage {
 	return &Storage{
+		Address:  NewAddressStorage(pool),
 		Customer: NewCustomerStorage(pool),
 		Product:  NewProductStorage(pool),
 	}
