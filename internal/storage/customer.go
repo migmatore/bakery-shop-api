@@ -21,8 +21,8 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		  VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING customer_id`
 
-	var id int
-	// TODO add delivery address
+	var id *int
+	// TODO check if id is nil
 	if err := s.pool.QueryRow(
 		ctx,
 		q,
@@ -33,7 +33,7 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		customer.Email,
 		customer.PasswordHash,
 		customer.DeliveryAddressId,
-	).Scan(&id); err != nil {
+	).Scan(id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return 0, err
@@ -43,7 +43,7 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		return 0, err
 	}
 
-	return id, nil
+	return *id, nil
 }
 
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {
