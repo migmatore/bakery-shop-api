@@ -11,6 +11,10 @@ import (
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
 
+type Pool struct {
+	*pgxpool.Pool
+}
+
 func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config) (*pgxpool.Pool, error) {
 	var err error
 	var pool *pgxpool.Pool
