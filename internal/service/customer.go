@@ -8,6 +8,7 @@ import (
 )
 
 type CustomerStorage interface {
+	WithTransaction(ctx context.Context, fn func(storage CustomerStorage) error) error
 	FindOne(ctx context.Context, id int) (*core.Customer, error)
 	FindAll(ctx context.Context) ([]*core.Customer, error)
 	Create(ctx context.Context, customer *core.CreateCustomer) (int, error)
@@ -28,6 +29,10 @@ func NewCustomerService(customerStorage CustomerStorage, addressStorage Delivery
 
 // TODO create transaction for customer
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
+	err := s.customerStorage.WithTransaction(ctx, func(storage CustomerStorage) error {
+
+	})
+
 	var deliveryAddressId int
 
 	if customer.DeliveryAddress != nil {

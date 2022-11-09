@@ -16,6 +16,19 @@ func NewCustomerStorage(pool *pgxpool.Pool) *CustomerStorage {
 	return &CustomerStorage{pool: pool}
 }
 
+func (s *CustomerStorage) WithTransaction(ctx context.Context, fn func(storage CustomerStorage) error) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	err = fn(&CustomerStorage{tx})
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
 func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomer) (int, error) {
 	q := `INSERT INTO customers(first_name, last_name, patronymic, telephone_number, email, password_hash, delivery_address_id) 
 		  VALUES ($1, $2, $3, $4, $5, $6, $7)
