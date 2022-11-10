@@ -2,31 +2,18 @@ package storage
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/internal/core"
+	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
 
 type CustomerStorage struct {
-	pool *pgxpool.Pool
+	pool psql.AtomicPoolClient
 }
 
-func NewCustomerStorage(pool *pgxpool.Pool) *CustomerStorage {
+func NewCustomerStorage(pool psql.AtomicPoolClient) *CustomerStorage {
 	return &CustomerStorage{pool: pool}
-}
-
-func (s *CustomerStorage) WithTransaction(ctx context.Context, fn func(storage CustomerStorage) error) error {
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-	err = fn(&CustomerStorage{tx})
-	if err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
 }
 
 func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomer) (int, error) {
@@ -34,7 +21,7 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		  VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING customer_id`
 
-	var id *int
+	var id int
 	// TODO check if id is nil
 	if err := s.pool.QueryRow(
 		ctx,
@@ -46,7 +33,7 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		customer.Email,
 		customer.PasswordHash,
 		customer.DeliveryAddressId,
-	).Scan(id); err != nil {
+	).Scan(&id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return 0, err
@@ -56,7 +43,7 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 		return 0, err
 	}
 
-	return *id, nil
+	return id, nil
 }
 
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {

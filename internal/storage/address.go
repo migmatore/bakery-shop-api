@@ -2,17 +2,17 @@ package storage
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/internal/core"
+	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
 )
 
 type AddressStorage struct {
-	pool *pgxpool.Pool
+	pool psql.AtomicPoolClient
 }
 
-func NewAddressStorage(pool *pgxpool.Pool) *AddressStorage {
+func NewAddressStorage(pool psql.AtomicPoolClient) *AddressStorage {
 	return &AddressStorage{pool: pool}
 }
 

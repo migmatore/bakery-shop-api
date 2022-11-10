@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/middleware"
+	"github.com/migmatore/bakery-shop-api/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CustomerStorage interface {
-	WithTransaction(ctx context.Context, fn func(storage CustomerStorage) error) error
 	FindOne(ctx context.Context, id int) (*core.Customer, error)
 	FindAll(ctx context.Context) ([]*core.Customer, error)
 	Create(ctx context.Context, customer *core.CreateCustomer) (int, error)
@@ -19,62 +19,69 @@ type DeliveryAddressStorage interface {
 }
 
 type CustomerService struct {
+	transactor      storage.Transactor
 	customerStorage CustomerStorage
 	addressStorage  DeliveryAddressStorage
 }
 
-func NewCustomerService(customerStorage CustomerStorage, addressStorage DeliveryAddressStorage) *CustomerService {
-	return &CustomerService{customerStorage: customerStorage, addressStorage: addressStorage}
+func NewCustomerService(transactor storage.Transactor, customerStorage CustomerStorage, addressStorage DeliveryAddressStorage) *CustomerService {
+	return &CustomerService{transactor: transactor, customerStorage: customerStorage, addressStorage: addressStorage}
 }
 
 // TODO create transaction for customer
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
-	err := s.customerStorage.WithTransaction(ctx, func(storage CustomerStorage) error {
-
-	})
-
 	var deliveryAddressId int
+	var customerId int
 
-	if customer.DeliveryAddress != nil {
+	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		var err error
-		deliveryAddress := core.CreateDeliveryAddressDTO{
-			Region:          customer.DeliveryAddress.Region,
-			City:            customer.DeliveryAddress.City,
-			Street:          customer.DeliveryAddress.Street,
-			HouseNumber:     customer.DeliveryAddress.HouseNumber,
-			BuildingNumber:  customer.DeliveryAddress.BuildingNumber,
-			ApartmentNumber: customer.DeliveryAddress.ApartmentNumber,
+
+		if customer.DeliveryAddress != nil {
+			deliveryAddress := core.CreateDeliveryAddressDTO{
+				Region:          customer.DeliveryAddress.Region,
+				City:            customer.DeliveryAddress.City,
+				Street:          customer.DeliveryAddress.Street,
+				HouseNumber:     customer.DeliveryAddress.HouseNumber,
+				BuildingNumber:  customer.DeliveryAddress.BuildingNumber,
+				ApartmentNumber: customer.DeliveryAddress.ApartmentNumber,
+			}
+
+			deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(txCtx, &deliveryAddress)
+			if err != nil {
+				return err
+			}
 		}
 
-		deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(ctx, &deliveryAddress)
+		hash, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
 		if err != nil {
-			return "", nil
+			return err
 		}
-	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
+		strHash := string(hash)
 
-	strHash := string(hash)
+		customerModel := core.CreateCustomer{
+			FirstName:         customer.FirstName,
+			LastName:          customer.LastName,
+			Patronymic:        customer.Patronymic,
+			TelephoneNumber:   customer.TelephoneNumber,
+			Email:             &customer.Email,
+			PasswordHash:      &strHash,
+			DeliveryAddressId: &deliveryAddressId,
+		}
 
-	customerModel := core.CreateCustomer{
-		FirstName:         customer.FirstName,
-		LastName:          customer.LastName,
-		Patronymic:        customer.Patronymic,
-		TelephoneNumber:   customer.TelephoneNumber,
-		Email:             &customer.Email,
-		PasswordHash:      &strHash,
-		DeliveryAddressId: &deliveryAddressId,
-	}
+		customerId, err = s.customerStorage.Create(txCtx, &customerModel)
+		if err != nil {
+			return err
+		}
 
-	id, err := s.customerStorage.Create(ctx, &customerModel)
+		return nil
+	})
 	if err != nil {
 		return "", nil
 	}
+
 	// TODO move GenerateNewAccessToken from middleware package
-	token, err := middleware.GenerateNewAccessToken(id, true)
+	token, err := middleware.GenerateNewAccessToken(customerId, true)
 	if err != nil {
 		return "", nil
 	}

@@ -31,13 +31,14 @@ func (a *App) Run(ctx context.Context) {
 	}
 
 	logging.GetLogger(ctx).Info("Database reconnection goroutine initializing...")
-	go psql.Reconnect(ctx, pool, a.cfg)
+	go pool.Reconnect(ctx, a.cfg)
 
 	logging.GetLogger(ctx).Info("Storages initializing...")
 	storages := storage.New(pool)
 
 	logging.GetLogger(ctx).Info("Services initializing...")
 	services := service.New(service.Deps{
+		Transactor:      storages.Transactor,
 		AddressStorage:  storages.Address,
 		CustomerStorage: storages.Customer,
 		ProductStorage:  storages.Product,

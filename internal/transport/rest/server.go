@@ -2,7 +2,7 @@ package rest
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"os"
 	"os/signal"
@@ -13,10 +13,10 @@ import (
 type Server struct {
 	app  *fiber.App
 	addr string
-	pool *pgxpool.Pool
+	pool psql.AtomicPoolClient
 }
 
-func NewServer(addr string, app *fiber.App, pool *pgxpool.Pool) *Server {
+func NewServer(addr string, app *fiber.App, pool psql.AtomicPoolClient) *Server {
 	return &Server{
 		app:  app,
 		addr: addr,

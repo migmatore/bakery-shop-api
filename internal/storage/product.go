@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
@@ -12,10 +11,10 @@ import (
 )
 
 type ProductStorage struct {
-	pool *pgxpool.Pool
+	pool psql.AtomicPoolClient
 }
 
-func NewProductStorage(pool *pgxpool.Pool) *ProductStorage {
+func NewProductStorage(pool psql.AtomicPoolClient) *ProductStorage {
 	return &ProductStorage{pool: pool}
 }
 
