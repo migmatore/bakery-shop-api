@@ -7,7 +7,7 @@ import (
 )
 
 type Transactor interface {
-	WithinTransaction(ctx context.Context, txFunc func(context context.Context) error) error
+	WithinTransaction(ctx context.Context, txFunc func(txCtx context.Context) error) error
 }
 
 type Transact struct {

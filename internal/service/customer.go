@@ -28,7 +28,6 @@ func NewCustomerService(transactor storage.Transactor, customerStorage CustomerS
 	return &CustomerService{transactor: transactor, customerStorage: customerStorage, addressStorage: addressStorage}
 }
 
-// TODO create transaction for customer
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
 	var deliveryAddressId int
 	var customerId int

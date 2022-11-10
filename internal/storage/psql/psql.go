@@ -115,15 +115,15 @@ func (p *AtomicPool) Reconnect(ctx context.Context, cfg *config.Config) {
 			//ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			//defer cancel()
 			if p != nil {
-				p, err := pgxpool.Connect(ctx, dsn)
+				pool, err := pgxpool.Connect(ctx, dsn)
 				if err != nil {
 					logging.GetLogger(ctx).Errorf("DB reconnection error. %v", err)
 					time.Sleep(1 * time.Second)
 
 					continue
 				}
+				p.pool = pool
 
-				p = p
 			}
 
 		}

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
 
@@ -29,7 +28,7 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	h.app = fiber.New()
 
 	//h.app.Use(cors.New())
-	h.app.Use(logger.New())
+	//h.app.Use(logger.New())
 	h.app.Use(func(c *fiber.Ctx) error {
 		c.SetUserContext(ctx)
 
