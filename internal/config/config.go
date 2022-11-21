@@ -21,7 +21,7 @@ type Config struct {
 		Host     string `env:"DB_HOST" env-default:"localhost"`
 		Port     string `env:"DB_PORT" env-default:"5432"`
 		DB       string `env:"DB_NAME" env-default:"testdb"`
-		MaxConns string `env:"DB_MAX_CONNS" env-default:"10"`
+		MaxConns string `env:"DB_MAX_CONNS" env-default:"50"`
 	}
 	AppConfig struct {
 		LogLevel string `env:"LOG_LEVEL" env-default:"info"`

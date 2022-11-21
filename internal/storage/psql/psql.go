@@ -31,7 +31,7 @@ func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config) (*Ato
 	var pool *pgxpool.Pool
 
 	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s?pool_max_conns=%s",
+		"postgresql://%s:%s@%s:%s/%s?pool_max_conns=%s&pool_min_conns=10",
 		cfg.DBConnection.Username,
 		cfg.DBConnection.Password,
 		cfg.DBConnection.Host,
@@ -45,6 +45,8 @@ func NewPostgres(ctx context.Context, maxAttempts int, cfg *config.Config) (*Ato
 		defer cancel()
 
 		pool, err = pgxpool.Connect(ctx, dsn)
+		stat := pool.Stat()
+		fmt.Printf("max conns: %d, total conns: %d", stat.MaxConns(), stat.TotalConns())
 		if err != nil {
 			logging.GetLogger(ctx).Errorf("DB connection error. %v", err)
 			return err
