@@ -6,7 +6,7 @@ import (
 )
 
 type AddressStorage interface {
-	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (int, error)
+	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (*int, error)
 }
 
 type AddressService struct {
@@ -17,6 +17,6 @@ func NewAddressService(addressStorage AddressStorage) *AddressService {
 	return &AddressService{addressStorage: addressStorage}
 }
 
-func (s *AddressService) DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (int, error) {
+func (s *AddressService) DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (*int, error) {
 	return s.addressStorage.DeliveryAddressCreate(ctx, deliveryAddress)
 }

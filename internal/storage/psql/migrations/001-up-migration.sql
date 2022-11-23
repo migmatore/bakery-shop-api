@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS products
 (
     product_id         INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name               VARCHAR(50)  NOT NULL,
+    image_path         VARCHAR(50)  NOT NULL,
     description        VARCHAR(250) NULL,
     price              NUMERIC      NOT NULL CHECK (price > 0),
     manufacturing_date DATE         NOT NULL DEFAULT CURRENT_DATE CHECK (manufacturing_date <= expiration_date),

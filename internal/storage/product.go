@@ -19,7 +19,7 @@ func NewProductStorage(pool psql.AtomicPoolClient) *ProductStorage {
 }
 
 func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, error) {
-	q := `SELECT product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
+	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
                  manufacturer_id
           FROM products WHERE product_id=$1`
 	product := core.Product{}
@@ -27,6 +27,7 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 	if err := s.pool.QueryRow(ctx, q, id).Scan(
 		&product.ProductId,
 		&product.Name,
+		&product.ImagePath,
 		&product.Description,
 		&product.Price,
 		&product.ManufacturingDate,
@@ -48,7 +49,7 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 }
 
 func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error) {
-	q := `SELECT product_id, name, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
+	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
                  manufacturer_id
 		  FROM products`
 
@@ -71,6 +72,7 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 		err := rows.Scan(
 			&product.ProductId,
 			&product.Name,
+			&product.ImagePath,
 			&product.Description,
 			&product.Price,
 			&product.ManufacturingDate,
@@ -100,6 +102,9 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 	if product.Name != nil {
 		updateQuery.AddUpdateColumn("name", product.Name)
 	}
+	if product.ImagePath != nil {
+		updateQuery.AddUpdateColumn("image_path", product.ImagePath)
+	}
 	if product.Description != nil {
 		updateQuery.AddUpdateColumn("description", product.Description)
 	}
@@ -125,7 +130,7 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 
 	updateQuery.AddWhere("product_id", id)
 
-	updateQuery.AddReturning("product_id", "name", "description", "price", "manufacturing_date", "expiration_date",
+	updateQuery.AddReturning("product_id", "name", "image_path", "description", "price", "manufacturing_date", "expiration_date",
 		"category_id", "recipe_id", "manufacturer_id")
 
 	newProduct := core.Product{}
@@ -133,6 +138,7 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 	if err := s.pool.QueryRow(ctx, updateQuery.GetQuery(), updateQuery.GetValues()...).Scan(
 		&newProduct.ProductId,
 		&newProduct.Name,
+		&newProduct.ImagePath,
 		&newProduct.Description,
 		&newProduct.Price,
 		&newProduct.ManufacturingDate,

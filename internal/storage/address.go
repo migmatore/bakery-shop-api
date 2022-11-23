@@ -16,7 +16,7 @@ func NewAddressStorage(pool psql.AtomicPoolClient) *AddressStorage {
 	return &AddressStorage{pool: pool}
 }
 
-func (s *AddressStorage) DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (int, error) {
+func (s *AddressStorage) DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (*int, error) {
 	q := `INSERT INTO delivery_addresses(region, city, street, house_number, building_number, apartment_number)
 		  VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING delivery_address_id`
@@ -35,12 +35,12 @@ func (s *AddressStorage) DeliveryAddressCreate(ctx context.Context, deliveryAddr
 	).Scan(&id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
-			return 0, err
+			return nil, err
 		}
 
 		logging.GetLogger(ctx).Errorf("Query error. %v", err)
-		return 0, err
+		return nil, err
 	}
 
-	return id, nil
+	return &id, nil
 }

@@ -5,6 +5,7 @@ import "github.com/jackc/pgtype"
 type Product struct {
 	ProductId         int         `json:"product_id"`
 	Name              string      `json:"name"`
+	ImagePath         string      `json:"image_path"`
 	Description       *string     `json:"description,omitempty"`
 	Price             float64     `json:"price"`
 	ManufacturingDate pgtype.Date `json:"manufacturing_date"`
@@ -16,6 +17,7 @@ type Product struct {
 
 type PatchProduct struct {
 	Name              *string      `json:"name,omitempty"`
+	ImagePath         *string      `json:"image_path,omitempty"`
 	Description       *string      `json:"description,omitempty"`
 	Price             *float64     `json:"price,omitempty"`
 	ManufacturingDate *pgtype.Date `json:"manufacturing_date,omitempty"`

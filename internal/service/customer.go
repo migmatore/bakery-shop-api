@@ -15,7 +15,7 @@ type CustomerStorage interface {
 }
 
 type DeliveryAddressStorage interface {
-	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (int, error)
+	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (*int, error)
 }
 
 type CustomerService struct {
@@ -29,7 +29,7 @@ func NewCustomerService(transactor storage.Transactor, customerStorage CustomerS
 }
 
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
-	var deliveryAddressId int
+	var deliveryAddressId *int
 	var customerId int
 
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
@@ -65,7 +65,7 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 			TelephoneNumber:   customer.TelephoneNumber,
 			Email:             &customer.Email,
 			PasswordHash:      &strHash,
-			DeliveryAddressId: &deliveryAddressId,
+			DeliveryAddressId: deliveryAddressId,
 		}
 
 		customerId, err = s.customerStorage.Create(txCtx, &customerModel)
