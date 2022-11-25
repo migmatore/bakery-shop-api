@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS suppliers
     supplier_id        INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name               VARCHAR(100) NOT NULL UNIQUE,
     company_address_id INTEGER      NULL REFERENCES company_addresses (company_address_id) ON DELETE SET NULL,
-    telephone_number   VARCHAR(100) NOT NULL
+    phone_number       VARCHAR(17)  NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS manufacturers
@@ -46,25 +46,18 @@ CREATE TABLE IF NOT EXISTS positions
     description VARCHAR(250) NULL
 );
 
--- CREATE TABLE IF NOT EXISTS employee_accounts
--- (
---     employee_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
---     email               VARCHAR(100) NOT NULL UNIQUE,
---     password_hash       VARCHAR(64)  NOT NULL UNIQUE
--- );
-
 CREATE TABLE IF NOT EXISTS employees
 (
-    employee_id      INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    first_name       VARCHAR(50)  NOT NULL,
-    last_name        VARCHAR(50)  NOT NULL,
-    patronymic       VARCHAR(50)  NULL,
-    telephone_number VARCHAR(100) NOT NULL,
---     account_id       INTEGER      NOT NULL REFERENCES employee_accounts (employee_account_id) ON DELETE CASCADE,
-    email            VARCHAR(100) NULL UNIQUE,
-    password_hash    VARCHAR(64)  NULL UNIQUE,
-    position_id      INTEGER      NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
-    company_id       INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
+    employee_id   INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    first_name    VARCHAR(50) NOT NULL,
+    last_name     VARCHAR(50) NOT NULL,
+    patronymic    VARCHAR(50) NULL,
+    phone_number  VARCHAR(17) NOT NULL,
+    email         VARCHAR(50) NULL UNIQUE,
+    password_hash VARCHAR(64) NULL UNIQUE,
+    position_id   INTEGER     NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
+    company_id    INTEGER     NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE,
+    admin         BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS products
@@ -78,7 +71,16 @@ CREATE TABLE IF NOT EXISTS products
     expiration_date    DATE         NOT NULL,
     category_id        INTEGER      NULL REFERENCES categories (category_id) ON DELETE SET NULL,
     recipe_id          INTEGER      NULL REFERENCES recipes (recipe_id) ON DELETE SET NULL,
-    manufacturer_id    INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE
+    manufacturer_id    INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE,
+    unit_stock         INTEGER      NOT NULL DEFAULT 0,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP    NULL
+);
+
+CREATE TABLE IF NOT EXISTS weight_units
+(
+    weight_unit_id INTEGER    NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name           VARCHAR(5) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS ingredients
@@ -87,7 +89,8 @@ CREATE TABLE IF NOT EXISTS ingredients
     name               VARCHAR(100) NOT NULL,
     description        VARCHAR(250) NULL,
     remaining_quantity INTEGER      NOT NULL,
-    supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE
+    supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE,
+    weight_unit        INTEGER      NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS recipe_ingredients
@@ -95,7 +98,8 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients
     recipe_ingredient_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     recipe_id            INTEGER NOT NULL REFERENCES recipes (recipe_id) ON DELETE CASCADE,
     ingredient_id        INTEGER NOT NULL REFERENCES ingredients (ingredient_id) ON DELETE CASCADE,
-    quantity             INTEGER NOT NULL
+    quantity             NUMERIC NOT NULL CHECK ( quantity > 0 ),
+    weight_unit          INTEGER NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS payment_methods
@@ -107,9 +111,9 @@ CREATE TABLE IF NOT EXISTS payment_methods
 CREATE TABLE IF NOT EXISTS receipts
 (
     receipt_id        INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    order_date        DATE    NOT NULL DEFAULT CURRENT_DATE,
     payment_details   TEXT    NOT NULL,
-    payment_method_id INTEGER NOT NULL REFERENCES payment_methods (payment_method_id) ON DELETE CASCADE
+    payment_method_id INTEGER NOT NULL REFERENCES payment_methods (payment_method_id) ON DELETE CASCADE,
+    amount            NUMERIC NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS order_statuses
@@ -124,13 +128,6 @@ CREATE TABLE IF NOT EXISTS delivery_methods
     name               VARCHAR(50) NOT NULL UNIQUE
 );
 
--- CREATE TABLE IF NOT EXISTS customer_accounts
--- (
---     customer_account_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
---     email               VARCHAR(100) NOT NULL UNIQUE,
---     password_hash       VARCHAR(64)  NOT NULL UNIQUE
--- );
-
 CREATE TABLE IF NOT EXISTS delivery_addresses
 (
     delivery_address_id INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -139,31 +136,62 @@ CREATE TABLE IF NOT EXISTS delivery_addresses
     street              VARCHAR(200) NOT NULL,
     house_number        VARCHAR(10)  NOT NULL,
     building_number     VARCHAR(5)   NULL,
-    apartment_number    VARCHAR(5)   NOT NULL
+    apartment_number    VARCHAR(5)   NULL
+);
+
+CREATE TABLE IF NOT EXISTS wish_lists
+(
+    wish_list_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+);
+
+CREATE TABLE IF NOT EXISTS wish_list_item
+(
+    wish_list_item_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    wish_list_id INTEGER NOT NULL REFERENCES wish_lists(wish_list_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS carts
+(
+    cart_id     INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    total_price NUMERIC NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS cart_items
+(
+    cart_item_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    product_id   INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
+    quantity     INTEGER NOT NULL DEFAULT 1,
+    price        NUMERIC NOT NULL CHECK (price > 0),
+    cart_id      INTEGER NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS customers
 (
-    customer_id         INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    first_name          VARCHAR(50)  NOT NULL,
-    last_name           VARCHAR(50)  NOT NULL,
-    patronymic          VARCHAR(50)  NULL,
-    telephone_number    VARCHAR(100) NOT NULL,
---     account_id          INTEGER      NULL REFERENCES customer_accounts (customer_account_id) ON DELETE SET NULL,
-    email               VARCHAR(100) NULL UNIQUE,
-    password_hash       VARCHAR(64)  NULL UNIQUE,
-    delivery_address_id INTEGER      NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL
+    customer_id         INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    first_name          VARCHAR(50) NOT NULL,
+    last_name           VARCHAR(50) NOT NULL,
+    image_path          VARCHAR(50) NULL,
+    patronymic          VARCHAR(50) NULL,
+    phone_number        VARCHAR(17) NOT NULL,
+    email               VARCHAR(50) NULL UNIQUE,
+    password_hash       VARCHAR(64) NULL UNIQUE,
+    delivery_address_id INTEGER     NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL,
+    cart_id             INTEGER     NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE,
+    wish_list_id        INTEGER     NOT NULL REFERENCES wish_lists (wish_list_id) ON DELETE RESTRICT,
+    created_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP   NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders
 (
-    order_id            INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    customer_id         INTEGER NOT NULL REFERENCES customers (customer_id) ON DELETE CASCADE,
-    product_id          INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
-    receipt_id          INTEGER NOT NULL REFERENCES receipts (receipt_id) ON DELETE CASCADE,
-    order_status_id     INTEGER NOT NULL REFERENCES order_statuses (order_status_id) ON DELETE CASCADE,
-    delivery_address_id INTEGER NOT NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE CASCADE,
-    delivery_method_id  INTEGER NOT NULL REFERENCES delivery_methods (delivery_method_id) ON DELETE CASCADE
+    order_id            INTEGER   NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    customer_id         INTEGER   NOT NULL REFERENCES customers (customer_id) ON DELETE CASCADE,
+    cart_id             INTEGER   NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE,
+    receipt_id          INTEGER   NOT NULL REFERENCES receipts (receipt_id) ON DELETE CASCADE,
+    order_status_id     INTEGER   NOT NULL REFERENCES order_statuses (order_status_id) ON DELETE CASCADE,
+    delivery_address_id INTEGER   NOT NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE CASCADE,
+    delivery_method_id  INTEGER   NOT NULL REFERENCES delivery_methods (delivery_method_id) ON DELETE CASCADE,
+    order_date          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 INSERT INTO payment_methods(name)
@@ -178,3 +206,8 @@ VALUES ('В обработке'),
 INSERT INTO delivery_methods(name)
 VALUES ('Самомывоз'),
        ('Курьер');
+INSERT INTO weight_units(name)
+VALUES ('кг'),
+       ('г'),
+       ('л'),
+       ('мл');
