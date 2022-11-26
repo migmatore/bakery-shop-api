@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS ingredients
     name               VARCHAR(100) NOT NULL,
     description        VARCHAR(250) NULL,
     remaining_quantity INTEGER      NOT NULL,
-    supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE,
-    weight_unit        INTEGER      NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT
+    weight_unit_id     INTEGER      NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT,
+    supplier_id        INTEGER      NOT NULL REFERENCES suppliers (supplier_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS recipe_ingredients
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients
     recipe_id            INTEGER NOT NULL REFERENCES recipes (recipe_id) ON DELETE CASCADE,
     ingredient_id        INTEGER NOT NULL REFERENCES ingredients (ingredient_id) ON DELETE CASCADE,
     quantity             NUMERIC NOT NULL CHECK ( quantity > 0 ),
-    weight_unit          INTEGER NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT
+    weight_unit_id       INTEGER NOT NULL REFERENCES weight_units (weight_unit_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS payment_methods
@@ -147,13 +147,14 @@ CREATE TABLE IF NOT EXISTS wish_lists
 CREATE TABLE IF NOT EXISTS wish_list_item
 (
     wish_list_item_id INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    wish_list_id INTEGER NOT NULL REFERENCES wish_lists(wish_list_id) ON DELETE CASCADE
+    wish_list_id      INTEGER NOT NULL REFERENCES wish_lists (wish_list_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS carts
 (
-    cart_id     INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    total_price NUMERIC NOT NULL DEFAULT 0
+    cart_id        INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    products_count INTEGER NOT NULL DEFAULT 0,
+    total_price    NUMERIC NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS cart_items
@@ -170,16 +171,16 @@ CREATE TABLE IF NOT EXISTS customers
     customer_id         INTEGER     NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     first_name          VARCHAR(50) NOT NULL,
     last_name           VARCHAR(50) NOT NULL,
-    image_path          VARCHAR(50) NULL,
     patronymic          VARCHAR(50) NULL,
+    image_path          VARCHAR(50) NULL,
     phone_number        VARCHAR(17) NOT NULL,
     email               VARCHAR(50) NULL UNIQUE,
     password_hash       VARCHAR(64) NULL UNIQUE,
     delivery_address_id INTEGER     NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL,
     cart_id             INTEGER     NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE,
     wish_list_id        INTEGER     NOT NULL REFERENCES wish_lists (wish_list_id) ON DELETE RESTRICT,
-    created_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP   NULL
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders

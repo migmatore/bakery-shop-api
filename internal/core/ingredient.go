@@ -5,5 +5,6 @@ type Ingredient struct {
 	Name              string  `json:"name"`
 	Description       *string `json:"description,omitempty"`
 	RemainingQuantity int     `json:"remaining_quantity"`
+	WeightUnitId      int     `json:"weight_unit"`
 	SupplierId        int     `json:"supplier_id"`
 }

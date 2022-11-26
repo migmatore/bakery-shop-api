@@ -17,22 +17,28 @@ func NewCustomerStorage(pool psql.AtomicPoolClient) *CustomerStorage {
 }
 
 func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCustomer) (int, error) {
-	q := `INSERT INTO customers(first_name, last_name, patronymic, telephone_number, email, password_hash, delivery_address_id) 
-		  VALUES ($1, $2, $3, $4, $5, $6, $7)
+	q := `INSERT INTO customers(first_name, last_name, patronymic, image_path, phone_number, email, password_hash, 
+                      delivery_address_id, cart_id, wish_list_id, created_at, updated_at) 
+		  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
           RETURNING customer_id`
 
 	var id int
-	// TODO check if id is nil
+
 	if err := s.pool.QueryRow(
 		ctx,
 		q,
 		customer.FirstName,
 		customer.LastName,
 		customer.Patronymic,
-		customer.TelephoneNumber,
+		customer.ImagePath,
+		customer.PhoneNumber,
 		customer.Email,
 		customer.PasswordHash,
 		customer.DeliveryAddressId,
+		customer.CartId,
+		customer.WishListId,
+		customer.CreatedAt,
+		customer.UpdatedAt,
 	).Scan(&id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
@@ -47,10 +53,25 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 }
 
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {
-	q := `select customer_id, first_name, telephone_number from customers where customers.customer_id=$1`
-	var c core.Customer
+	q := `select customer_id, first_name, last_name, patronymic, image_path, phone_number, email, password_hash, 
+       delivery_address_id, cart_id, wish_list_id, created_at, updated_at from customers where customers.customer_id=$1`
+	var customer core.Customer
 
-	if err := s.pool.QueryRow(ctx, q, id).Scan(&c.CustomerId, &c.FirstName, &c.TelephoneNumber); err != nil {
+	if err := s.pool.QueryRow(ctx, q, id).Scan(
+		&customer.CustomerId,
+		&customer.FirstName,
+		&customer.LastName,
+		&customer.Patronymic,
+		&customer.ImagePath,
+		&customer.PhoneNumber,
+		&customer.Email,
+		&customer.PasswordHash,
+		&customer.DeliveryAddressId,
+		&customer.CartId,
+		&customer.WishListId,
+		&customer.CreatedAt,
+		&customer.UpdatedAt,
+	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
@@ -60,11 +81,12 @@ func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, 
 		return nil, err
 	}
 
-	return &c, nil
+	return &customer, nil
 }
 
 func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error) {
-	q := `select customer_id, first_name, last_name, telephone_number from customers`
+	q := `select customer_id, first_name, last_name, patronymic, image_path, phone_number, email, password_hash, 
+       delivery_address_id, cart_id, wish_list_id, created_at, updated_at from customers`
 
 	customers := make([]*core.Customer, 0)
 
@@ -79,7 +101,21 @@ func (s *CustomerStorage) FindAll(ctx context.Context) ([]*core.Customer, error)
 	for rows.Next() {
 		customer := core.Customer{}
 
-		err := rows.Scan(&customer.CustomerId, &customer.FirstName, &customer.LastName, &customer.TelephoneNumber)
+		err := rows.Scan(
+			&customer.CustomerId,
+			&customer.FirstName,
+			&customer.LastName,
+			&customer.Patronymic,
+			&customer.ImagePath,
+			&customer.PhoneNumber,
+			&customer.Email,
+			&customer.PasswordHash,
+			&customer.DeliveryAddressId,
+			&customer.CartId,
+			&customer.WishListId,
+			&customer.CreatedAt,
+			&customer.UpdatedAt,
+		)
 		if err != nil {
 			logging.GetLogger(ctx).Errorf("Query error. %v", err)
 			return nil, err

@@ -12,7 +12,7 @@ import (
 type CustomerService interface {
 	GetById(ctx context.Context, id int) (*core.Customer, error)
 	GetAll(ctx context.Context) ([]*core.Customer, error)
-	Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error)
+	Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error)
 }
 
 type CustomerHandler struct {
@@ -30,13 +30,13 @@ func (h *CustomerHandler) Signin(c *fiber.Ctx) error {
 func (h *CustomerHandler) Signup(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	customer := new(core.CreateCustomerWithAccountDTO)
+	customer := new(core.CreateCustomerDTO)
 
 	if err := c.BodyParser(customer); err != nil {
 		return utils.FiberError(c, fiber.StatusBadRequest, err)
 	}
 
-	if customer.FirstName == "" || customer.LastName == "" || customer.TelephoneNumber == "" ||
+	if customer.FirstName == "" || customer.LastName == "" || customer.ImagePath == "" || customer.PhoneNumber == "" ||
 		customer.Email == "" || customer.Password == "" {
 		return utils.FiberError(c, fiber.StatusBadRequest, errors.New("the required parameters cannot be empty"))
 	}

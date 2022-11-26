@@ -39,13 +39,13 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")
 
-	customer := v1.Group("/customer")
+	customer := v1.Group("/customers")
 
 	customer.Post("/signin", h.Customer.Signin)
 	customer.Post("/signup", h.Customer.Signup)
 
 	customer.Get("/:id", h.Customer.GetById)
-	customer.Get("/all", h.Customer.GetAll)
+	customer.Get("/", h.Customer.GetAll)
 
 	product := v1.Group("/product")
 

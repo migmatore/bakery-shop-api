@@ -5,7 +5,6 @@ import (
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/middleware"
 	"github.com/migmatore/bakery-shop-api/internal/storage"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type CustomerStorage interface {
@@ -15,7 +14,7 @@ type CustomerStorage interface {
 }
 
 type DeliveryAddressStorage interface {
-	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddressDTO) (*int, error)
+	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddress) (*int, error)
 }
 
 type CustomerService struct {
@@ -28,7 +27,7 @@ func NewCustomerService(transactor storage.Transactor, customerStorage CustomerS
 	return &CustomerService{transactor: transactor, customerStorage: customerStorage, addressStorage: addressStorage}
 }
 
-func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerWithAccountDTO) (string, error) {
+func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error) {
 	var deliveryAddressId *int
 	var customerId int
 
@@ -36,39 +35,20 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 		var err error
 
 		if customer.DeliveryAddress != nil {
-			deliveryAddress := core.CreateDeliveryAddressDTO{
-				Region:          customer.DeliveryAddress.Region,
-				City:            customer.DeliveryAddress.City,
-				Street:          customer.DeliveryAddress.Street,
-				HouseNumber:     customer.DeliveryAddress.HouseNumber,
-				BuildingNumber:  customer.DeliveryAddress.BuildingNumber,
-				ApartmentNumber: customer.DeliveryAddress.ApartmentNumber,
-			}
+			deliveryAddress := core.NewCreateDeliveryAddressFromDTO(customer.DeliveryAddress)
 
-			deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(txCtx, &deliveryAddress)
+			deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(txCtx, deliveryAddress)
 			if err != nil {
 				return err
 			}
 		}
 
-		hash, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
+		customerModel, err := core.NewCreateCustomerFromDTO(customer, deliveryAddressId, 1, 1)
 		if err != nil {
 			return err
 		}
 
-		strHash := string(hash)
-
-		customerModel := core.CreateCustomer{
-			FirstName:         customer.FirstName,
-			LastName:          customer.LastName,
-			Patronymic:        customer.Patronymic,
-			TelephoneNumber:   customer.TelephoneNumber,
-			Email:             &customer.Email,
-			PasswordHash:      &strHash,
-			DeliveryAddressId: deliveryAddressId,
-		}
-
-		customerId, err = s.customerStorage.Create(txCtx, &customerModel)
+		customerId, err = s.customerStorage.Create(txCtx, customerModel)
 		if err != nil {
 			return err
 		}

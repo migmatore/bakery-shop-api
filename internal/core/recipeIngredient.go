@@ -5,4 +5,5 @@ type RecipeIngredient struct {
 	RecipeId           int `json:"recipe_id"`
 	IngredientId       int `json:"ingredient_id"`
 	Quantity           int `json:"quantity"`
+	WeightUnitId       int `json:"weight_unit_id"`
 }
