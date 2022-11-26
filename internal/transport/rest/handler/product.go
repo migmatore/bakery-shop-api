@@ -76,3 +76,9 @@ func (h *ProductHandler) Patch(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(newProduct)
 }
+
+func (h *ProductHandler) Create(c *fiber.Ctx) error {
+	//ctx := c.UserContext()
+
+	return nil
+}

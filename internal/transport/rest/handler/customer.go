@@ -46,7 +46,6 @@ func (h *CustomerHandler) Signup(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	// TODO token return
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"token": token,
 	})

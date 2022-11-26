@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS suppliers
     phone_number       VARCHAR(17)  NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS manufacturers
+CREATE TABLE IF NOT EXISTS stores
 (
-    manufacturer_id    INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    store_id    INTEGER      NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name               VARCHAR(150) NOT NULL UNIQUE,
     company_address_id INTEGER      NULL REFERENCES company_addresses (company_address_id) ON DELETE SET NULL,
     supplier_id        INTEGER      NULL REFERENCES suppliers (supplier_id) ON DELETE SET NULL
@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS employees
     phone_number  VARCHAR(17) NOT NULL,
     email         VARCHAR(50) NULL UNIQUE,
     password_hash VARCHAR(64) NULL UNIQUE,
-    position_id   INTEGER     NOT NULL REFERENCES positions (position_id) ON DELETE CASCADE,
-    company_id    INTEGER     NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE,
+    position_id   INTEGER     NULL REFERENCES positions (position_id) ON DELETE CASCADE,
+    company_id    INTEGER     NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     admin         BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS products
     expiration_date    DATE         NOT NULL,
     category_id        INTEGER      NULL REFERENCES categories (category_id) ON DELETE SET NULL,
     recipe_id          INTEGER      NULL REFERENCES recipes (recipe_id) ON DELETE SET NULL,
-    manufacturer_id    INTEGER      NOT NULL REFERENCES manufacturers (manufacturer_id) ON DELETE CASCADE,
+    manufacturer_id    INTEGER      NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     unit_stock         INTEGER      NOT NULL DEFAULT 0,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP    NULL
@@ -212,3 +212,5 @@ VALUES ('кг'),
        ('г'),
        ('л'),
        ('мл');
+INSERT INTO positions(name)
+VALUES ('Администратор');

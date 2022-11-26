@@ -9,6 +9,9 @@ type Storage struct {
 	Address    *AddressStorage
 	Customer   *CustomerStorage
 	Product    *ProductStorage
+	Cart       *CartStorage
+	WishList   *WishListStorage
+	Store      *StoreStorage
 }
 
 func New(pool psql.AtomicPoolClient) *Storage {
@@ -17,5 +20,8 @@ func New(pool psql.AtomicPoolClient) *Storage {
 		Address:    NewAddressStorage(pool),
 		Customer:   NewCustomerStorage(pool),
 		Product:    NewProductStorage(pool),
+		Cart:       NewCartStorage(pool),
+		WishList:   NewWishListStorage(pool),
+		Store:      NewStoreStorage(pool),
 	}
 }

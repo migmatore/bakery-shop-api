@@ -9,18 +9,21 @@ import (
 type Deps struct {
 	CustomerService CustomerService
 	ProductService  ProductService
+	StoreService    StoreService
 }
 
 type Handler struct {
 	app      *fiber.App
 	Customer *CustomerHandler
 	Product  *ProductHandler
+	Store    *StoreHandler
 }
 
 func New(deps Deps) *Handler {
 	return &Handler{
 		Customer: NewCustomerHandler(deps.CustomerService),
 		Product:  NewProductHandler(deps.ProductService),
+		Store:    NewStoreHandler(deps.StoreService),
 	}
 }
 
@@ -39,19 +42,23 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")
 
-	customer := v1.Group("/customers")
+	customers := v1.Group("/customers")
 
-	customer.Post("/signin", h.Customer.Signin)
-	customer.Post("/signup", h.Customer.Signup)
+	customers.Post("/signin", h.Customer.Signin)
+	customers.Post("/signup", h.Customer.Signup)
 
-	customer.Get("/:id", h.Customer.GetById)
-	customer.Get("/", h.Customer.GetAll)
+	customers.Get("/:id", h.Customer.GetById)
+	customers.Get("/", h.Customer.GetAll)
 
-	product := v1.Group("/product")
+	products := v1.Group("/products")
 
-	product.Get("/:id", h.Product.GetOne)
-	product.Get("/all", h.Product.GetAll)
-	product.Patch("/:id", h.Product.Patch)
+	products.Get("/:id", h.Product.GetOne)
+	products.Get("/", h.Product.GetAll)
+	products.Patch("/:id", h.Product.Patch)
+	products.Post("/", h.Product.Create)
+
+	stores := v1.Group("/stores")
+	stores.Post("/", h.Store.Create)
 
 	return h.app
 }

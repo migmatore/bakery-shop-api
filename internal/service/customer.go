@@ -13,37 +13,69 @@ type CustomerStorage interface {
 	Create(ctx context.Context, customer *core.CreateCustomer) (int, error)
 }
 
-type DeliveryAddressStorage interface {
-	DeliveryAddressCreate(ctx context.Context, deliveryAddress *core.CreateDeliveryAddress) (*int, error)
+type CustomerDeliveryAddressStorage interface {
+	CreateDeliveryAddress(ctx context.Context, deliveryAddress *core.CreateDeliveryAddress) (*int, error)
+}
+
+type CustomerCartStorage interface {
+	Create(ctx context.Context) (int, error)
+}
+
+type CustomerWishListStorage interface {
+	Create(ctx context.Context) (int, error)
 }
 
 type CustomerService struct {
 	transactor      storage.Transactor
 	customerStorage CustomerStorage
-	addressStorage  DeliveryAddressStorage
+	addressStorage  CustomerDeliveryAddressStorage
+	cartStorage     CustomerCartStorage
+	wishListStorage CustomerWishListStorage
 }
 
-func NewCustomerService(transactor storage.Transactor, customerStorage CustomerStorage, addressStorage DeliveryAddressStorage) *CustomerService {
-	return &CustomerService{transactor: transactor, customerStorage: customerStorage, addressStorage: addressStorage}
+func NewCustomerService(
+	transactor storage.Transactor,
+	customerStorage CustomerStorage,
+	addressStorage CustomerDeliveryAddressStorage,
+	cartStorage CustomerCartStorage,
+	wishListStorage CustomerWishListStorage,
+) *CustomerService {
+	return &CustomerService{
+		transactor:      transactor,
+		customerStorage: customerStorage,
+		addressStorage:  addressStorage,
+		cartStorage:     cartStorage,
+		wishListStorage: wishListStorage,
+	}
 }
 
 func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error) {
-	var deliveryAddressId *int
 	var customerId int
 
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		var err error
+		var deliveryAddressId *int
 
 		if customer.DeliveryAddress != nil {
 			deliveryAddress := core.NewCreateDeliveryAddressFromDTO(customer.DeliveryAddress)
 
-			deliveryAddressId, err = s.addressStorage.DeliveryAddressCreate(txCtx, deliveryAddress)
+			deliveryAddressId, err = s.addressStorage.CreateDeliveryAddress(txCtx, deliveryAddress)
 			if err != nil {
 				return err
 			}
 		}
 
-		customerModel, err := core.NewCreateCustomerFromDTO(customer, deliveryAddressId, 1, 1)
+		cartId, err := s.cartStorage.Create(txCtx)
+		if err != nil {
+			return err
+		}
+
+		wishListId, err := s.wishListStorage.Create(txCtx)
+		if err != nil {
+			return err
+		}
+
+		customerModel, err := core.NewCreateCustomerFromDTO(customer, deliveryAddressId, cartId, wishListId)
 		if err != nil {
 			return err
 		}

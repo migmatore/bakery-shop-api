@@ -42,12 +42,16 @@ func (a *App) Run(ctx context.Context) {
 		AddressStorage:  storages.Address,
 		CustomerStorage: storages.Customer,
 		ProductStorage:  storages.Product,
+		CartStorage:     storages.Cart,
+		WishListStorage: storages.WishList,
+		StoreStorage:    storages.Store,
 	})
 
 	logging.GetLogger(ctx).Info("Handlers initializing...")
 	restHandlers := handler.New(handler.Deps{
 		CustomerService: services.Customer,
 		ProductService:  services.Product,
+		StoreService:    services.Store,
 	})
 
 	app := restHandlers.Init(ctx)

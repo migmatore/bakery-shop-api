@@ -67,8 +67,8 @@ func NewCreateCustomerFromDTO(dto *CreateCustomerDTO, deliveryAddressId *int, ca
 		Email:             dto.Email,
 		PasswordHash:      string(hash),
 		DeliveryAddressId: deliveryAddressId,
-		CartId:            1,
-		WishListId:        1,
+		CartId:            cartId,
+		WishListId:        wishListId,
 		CreatedAt:         time.Now(),
 		UpdatedAt:         nil,
 	}, nil

@@ -40,10 +40,36 @@ func NewCreateDeliveryAddressFromDTO(dto *CreateDeliveryAddressDTO) *CreateDeliv
 }
 
 type CompanyAddress struct {
-	DeliveryAddressId int     `json:"delivery_address_id"`
-	Region            string  `json:"region"`
-	City              string  `json:"city"`
-	Street            string  `json:"street"`
-	HouseNumber       *string `json:"house_number,omitempty"`
-	BuildingNumber    *string `json:"building_number,omitempty"`
+	CompanyId      int     `json:"delivery_address_id"`
+	Region         string  `json:"region"`
+	City           string  `json:"city"`
+	Street         string  `json:"street"`
+	HouseNumber    *string `json:"house_number,omitempty"`
+	BuildingNumber *string `json:"building_number,omitempty"`
+}
+
+type CreateCompanyAddress struct {
+	Region         string  `json:"region"`
+	City           string  `json:"city"`
+	Street         string  `json:"street"`
+	HouseNumber    *string `json:"house_number,omitempty"`
+	BuildingNumber *string `json:"building_number,omitempty"`
+}
+
+type CreateCompanyAddressDTO struct {
+	Region         string  `json:"region"`
+	City           string  `json:"city"`
+	Street         string  `json:"street"`
+	HouseNumber    *string `json:"house_number,omitempty"`
+	BuildingNumber *string `json:"building_number,omitempty"`
+}
+
+func NewCreateCompanyAddressFromDTO(dto *CreateCompanyAddressDTO) *CreateCompanyAddress {
+	return &CreateCompanyAddress{
+		Region:         dto.Region,
+		City:           dto.City,
+		Street:         dto.Street,
+		HouseNumber:    dto.HouseNumber,
+		BuildingNumber: dto.BuildingNumber,
+	}
 }
