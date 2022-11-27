@@ -53,6 +53,7 @@ func (a *App) Run(ctx context.Context) {
 		CustomerService: services.Customer,
 		ProductService:  services.Product,
 		StoreService:    services.Store,
+		EmployeeService: services.Employee,
 	})
 
 	app := restHandlers.Init(ctx)

@@ -49,6 +49,16 @@ type CreateStoreAdminDTO struct {
 	PositionId  *int    `json:"position_id,omitempty"`
 }
 
+type SigninEmployeeDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SigninEmployee struct {
+	EmployeeId int    `json:"employee_id"`
+	Password   string `json:"password"`
+}
+
 func NewCreateStoreAdminFromDTO(dto *CreateStoreAdminDTO, positionId *int, companyId int) (*CreateEmployee, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {

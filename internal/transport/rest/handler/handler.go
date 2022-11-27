@@ -10,6 +10,7 @@ type Deps struct {
 	CustomerService CustomerService
 	ProductService  ProductService
 	StoreService    StoreService
+	EmployeeService EmployeeService
 }
 
 type Handler struct {
@@ -17,6 +18,7 @@ type Handler struct {
 	Customer *CustomerHandler
 	Product  *ProductHandler
 	Store    *StoreHandler
+	Employee *EmployeeHandler
 }
 
 func New(deps Deps) *Handler {
@@ -24,6 +26,7 @@ func New(deps Deps) *Handler {
 		Customer: NewCustomerHandler(deps.CustomerService),
 		Product:  NewProductHandler(deps.ProductService),
 		Store:    NewStoreHandler(deps.StoreService),
+		Employee: NewEmployeeHandler(deps.EmployeeService),
 	}
 }
 
@@ -59,6 +62,10 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 
 	stores := v1.Group("/stores")
 	stores.Post("/", h.Store.Create)
+
+	employees := v1.Group("/employees")
+	employees.Post("/signin", h.Employee.Signin)
+	employees.Get("/", h.Employee.GetAll)
 
 	return h.app
 }
