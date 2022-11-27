@@ -14,10 +14,10 @@ type CreateStore struct {
 }
 
 type CreateStoreDTO struct {
-	Name           string            `json:"name"`
-	Creator        CreateEmployeeDTO `json:"creator,omitempty"`
-	StoreAddressId *int              `json:"store_address_id,omitempty"`
-	SupplierId     *int              `json:"supplier_id,omitempty"`
+	Name           string              `json:"name"`
+	Creator        CreateStoreAdminDTO `json:"creator,omitempty"`
+	StoreAddressId *int                `json:"store_address_id,omitempty"`
+	SupplierId     *int                `json:"supplier_id,omitempty"`
 }
 
 func NewCreateStoreFromDTO(dto *CreateStoreDTO, addressId *int, supplierId *int) *CreateStore {

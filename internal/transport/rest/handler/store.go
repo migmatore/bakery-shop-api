@@ -30,8 +30,7 @@ func (h *StoreHandler) Create(c *fiber.Ctx) error {
 	}
 
 	if store.Name == "" || store.Creator.FirstName == "" || store.Creator.LastName == "" ||
-		store.Creator.PhoneNumber == "" || store.Creator.Email == "" || store.Creator.Password == "" ||
-		store.Creator.CompanyId == 0 {
+		store.Creator.PhoneNumber == "" || store.Creator.Email == "" || store.Creator.Password == "" {
 		return utils.FiberError(c, fiber.StatusBadRequest, errors.New("the required parameters cannot be empty"))
 	}
 

@@ -45,6 +45,7 @@ func (a *App) Run(ctx context.Context) {
 		CartStorage:     storages.Cart,
 		WishListStorage: storages.WishList,
 		StoreStorage:    storages.Store,
+		EmployeeStorage: storages.Employee,
 	})
 
 	logging.GetLogger(ctx).Info("Handlers initializing...")

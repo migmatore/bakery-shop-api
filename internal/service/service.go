@@ -7,9 +7,10 @@ type Deps struct {
 	AddressStorage  AddressStorage
 	CustomerStorage CustomerStorage
 	ProductStorage  ProductStorage
-	CartStorage     CustomerCartStorage     // TODO
-	WishListStorage CustomerWishListStorage // TODO
-	StoreStorage    StoreStorage
+	CartStorage     CustomerCartStorage     // TODO interface from service
+	WishListStorage CustomerWishListStorage // TODO interface from service
+	StoreStorage    StoreStorage            // TODO interface from service
+	EmployeeStorage StoreEmployeeStorage    // TODO interface from service
 }
 
 type Service struct {
@@ -24,6 +25,6 @@ func New(deps Deps) *Service {
 		Address:  NewAddressService(deps.AddressStorage),
 		Customer: NewCustomerService(deps.Transactor, deps.CustomerStorage, deps.AddressStorage, deps.CartStorage, deps.WishListStorage),
 		Product:  NewProductService(deps.ProductStorage),
-		Store:    NewStoreService(deps.Transactor, deps.StoreStorage),
+		Store:    NewStoreService(deps.Transactor, deps.StoreStorage, deps.EmployeeStorage),
 	}
 }

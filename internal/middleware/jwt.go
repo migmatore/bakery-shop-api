@@ -36,12 +36,13 @@ func jwtError(c *fiber.Ctx, err error) error {
 	})
 }
 
+// GenerateNewAccessToken TODO move from middleware package
 // TODO create access levels
 func GenerateNewAccessToken(id int, customer bool) (string, error) {
 	claims := jwt.MapClaims{
 		"id":       id,
 		"customer": customer,
-		"exp":      time.Now().Add(time.Minute * 30).Unix(),
+		"exp":      time.Now().Add(time.Hour * 48).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
