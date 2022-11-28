@@ -10,7 +10,7 @@ import (
 type ProductStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Product, error)
 	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error)
-	Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error)
+	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
 	Create(ctx context.Context, product *core.CreateProduct) error
 }
 
@@ -38,7 +38,9 @@ func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]stri
 }
 
 func (s *ProductService) Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error) {
-	return s.storage.Patch(ctx, id, product)
+	productModel := core.NewPatchProductFromDTO(product)
+
+	return s.storage.Patch(ctx, id, productModel)
 }
 
 func (s *ProductService) Create(ctx context.Context, product *core.CreateProductDTO, employeeId int, storeId int) error {

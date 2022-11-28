@@ -19,8 +19,8 @@ func NewProductStorage(pool psql.AtomicPoolClient) *ProductStorage {
 }
 
 func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, error) {
-	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
-                 store_id
+	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, 
+       recipe_id, store_id, unit_stock, created_at, updated_at
           FROM products WHERE product_id=$1`
 	product := core.Product{}
 
@@ -35,6 +35,9 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 		&product.CategoryId,
 		&product.RecipeId,
 		&product.StoreId,
+		&product.UnitStock,
+		&product.CreatedAt,
+		&product.UpdatedAt,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
@@ -49,8 +52,8 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 }
 
 func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error) {
-	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
-                 store_id
+	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, 
+       recipe_id, store_id, unit_stock, created_at, updated_at
 		  FROM products`
 
 	q = filter.EnrichQueryWithFilter(q, filterOptions)
@@ -80,6 +83,9 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 			&product.CategoryId,
 			&product.RecipeId,
 			&product.StoreId,
+			&product.UnitStock,
+			&product.CreatedAt,
+			&product.UpdatedAt,
 		)
 		if err != nil {
 			logging.GetLogger(ctx).Errorf("Query error. %v", err)
@@ -96,7 +102,7 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 	return products, nil
 }
 
-func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error) {
+func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error) {
 	updateQuery := psql.NewSQLUpdateBuilder("products")
 
 	if product.Name != nil {
@@ -121,17 +127,17 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 		updateQuery.AddUpdateColumn("category_id", product.CategoryId)
 	}
 	if product.RecipeId != nil {
-		updateQuery.AddUpdateColumn("price", product.RecipeId)
+		updateQuery.AddUpdateColumn("recipe_id", product.RecipeId)
 	}
-	// TODO set current manufacturer id
-	if product.StoreId != nil {
-		updateQuery.AddUpdateColumn("store_id", product.StoreId)
+	if product.UnitStock != nil {
+		updateQuery.AddUpdateColumn("unit_stock", product.UnitStock)
 	}
 
+	updateQuery.AddUpdateColumn("updated_at", product.UpdatedAt)
 	updateQuery.AddWhere("product_id", id)
 
-	updateQuery.AddReturning("product_id", "name", "image_path", "description", "price", "manufacturing_date", "expiration_date",
-		"category_id", "recipe_id", "store_id")
+	updateQuery.AddReturning("product_id", "name", "image_path", "description", "price", "manufacturing_date",
+		"expiration_date", "category_id", "recipe_id", "unit_stock", "store_id", "created_at", "updated_at")
 
 	newProduct := core.Product{}
 
@@ -145,7 +151,10 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 		&newProduct.ExpirationDate,
 		&newProduct.CategoryId,
 		&newProduct.RecipeId,
+		&newProduct.UnitStock,
 		&newProduct.StoreId,
+		&newProduct.CreatedAt,
+		&newProduct.UpdatedAt,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
