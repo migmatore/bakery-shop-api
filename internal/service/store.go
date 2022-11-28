@@ -35,12 +35,13 @@ func NewStoreService(
 
 func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (string, error) {
 	var employeeId int
+	var storeId int
 
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		var err error
 		storeModel := core.NewCreateStoreFromDTO(store, nil, nil)
 
-		storeId, err := s.customerStorage.Create(txCtx, storeModel)
+		storeId, err = s.customerStorage.Create(txCtx, storeModel)
 		if err != nil {
 			return err
 		}
@@ -61,7 +62,7 @@ func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (
 		return "", err
 	}
 
-	token, err := middleware.GenerateNewAccessToken(employeeId, false)
+	token, err := middleware.GenerateNewAccessToken(employeeId, false, storeId)
 	if err != nil {
 		return "", nil
 	}

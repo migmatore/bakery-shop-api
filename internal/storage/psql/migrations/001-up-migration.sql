@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS products
     expiration_date    DATE         NOT NULL,
     category_id        INTEGER      NULL REFERENCES categories (category_id) ON DELETE SET NULL,
     recipe_id          INTEGER      NULL REFERENCES recipes (recipe_id) ON DELETE SET NULL,
-    manufacturer_id    INTEGER      NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
+    store_id    INTEGER      NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     unit_stock         INTEGER      NOT NULL DEFAULT 0,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP    NULL

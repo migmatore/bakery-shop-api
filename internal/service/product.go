@@ -10,7 +10,12 @@ import (
 type ProductStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Product, error)
 	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error)
-	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
+	Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error)
+	Create(ctx context.Context, product *core.CreateProduct) error
+}
+
+type ProductEmployeeStorage interface {
+	FindOne()
 }
 
 type ProductService struct {
@@ -32,6 +37,16 @@ func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]stri
 	return s.storage.FindAll(ctx, filterOptions, sortOption)
 }
 
-func (s *ProductService) Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error) {
+func (s *ProductService) Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error) {
 	return s.storage.Patch(ctx, id, product)
+}
+
+func (s *ProductService) Create(ctx context.Context, product *core.CreateProductDTO, employeeId int, storeId int) error {
+	productModel := core.NewCreateProductFromDTO(product, storeId)
+
+	if err := s.storage.Create(ctx, productModel); err != nil {
+		return err
+	}
+
+	return nil
 }

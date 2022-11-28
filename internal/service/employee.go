@@ -32,7 +32,7 @@ func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEm
 		return "", errors.New("incorrect password")
 	}
 
-	token, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false)
+	token, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false, acc.CompanyId)
 	if err != nil {
 		return "", errors.New("token generation error")
 	}

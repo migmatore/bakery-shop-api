@@ -20,7 +20,7 @@ func NewProductStorage(pool psql.AtomicPoolClient) *ProductStorage {
 
 func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, error) {
 	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
-                 manufacturer_id
+                 store_id
           FROM products WHERE product_id=$1`
 	product := core.Product{}
 
@@ -34,7 +34,7 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 		&product.ExpirationDate,
 		&product.CategoryId,
 		&product.RecipeId,
-		&product.ManufacturerId,
+		&product.StoreId,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
@@ -50,7 +50,7 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 
 func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error) {
 	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, recipe_id,
-                 manufacturer_id
+                 store_id
 		  FROM products`
 
 	q = filter.EnrichQueryWithFilter(q, filterOptions)
@@ -79,7 +79,7 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 			&product.ExpirationDate,
 			&product.CategoryId,
 			&product.RecipeId,
-			&product.ManufacturerId,
+			&product.StoreId,
 		)
 		if err != nil {
 			logging.GetLogger(ctx).Errorf("Query error. %v", err)
@@ -96,7 +96,7 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 	return products, nil
 }
 
-func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error) {
+func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error) {
 	updateQuery := psql.NewSQLUpdateBuilder("products")
 
 	if product.Name != nil {
@@ -124,14 +124,14 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 		updateQuery.AddUpdateColumn("price", product.RecipeId)
 	}
 	// TODO set current manufacturer id
-	if product.ManufacturerId != nil {
-		updateQuery.AddUpdateColumn("manufacturer_id", product.ManufacturerId)
+	if product.StoreId != nil {
+		updateQuery.AddUpdateColumn("store_id", product.StoreId)
 	}
 
 	updateQuery.AddWhere("product_id", id)
 
 	updateQuery.AddReturning("product_id", "name", "image_path", "description", "price", "manufacturing_date", "expiration_date",
-		"category_id", "recipe_id", "manufacturer_id")
+		"category_id", "recipe_id", "store_id")
 
 	newProduct := core.Product{}
 
@@ -145,7 +145,7 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 		&newProduct.ExpirationDate,
 		&newProduct.CategoryId,
 		&newProduct.RecipeId,
-		&newProduct.ManufacturerId,
+		&newProduct.StoreId,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
@@ -157,4 +157,36 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 	}
 
 	return &newProduct, nil
+}
+
+func (s *ProductStorage) Create(ctx context.Context, product *core.CreateProduct) error {
+	q := `INSERT INTO products(name, image_path, description, price, manufacturing_date, expiration_date, category_id, 
+                     recipe_id, store_id, unit_stock, created_at) 
+		  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+
+	if _, err := s.pool.Exec(
+		ctx,
+		q,
+		product.Name,
+		product.ImagePath,
+		product.Description,
+		product.Price,
+		product.ManufacturingDate,
+		product.ExpirationDate,
+		product.CategoryId,
+		product.RecipeId,
+		product.StoreId,
+		product.UnitStock,
+		product.CreatedAt,
+	); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return err
+	}
+
+	return nil
 }

@@ -2,15 +2,19 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/migmatore/bakery-shop-api/internal/core"
+	"github.com/migmatore/bakery-shop-api/pkg/jwt"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
+	"time"
 )
 
 type ProductService interface {
 	GetOne(ctx context.Context, id int) (*core.Product, error)
 	GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error)
-	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
+	Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error)
+	Create(ctx context.Context, product *core.CreateProductDTO, employeeId int, storeId int) error
 }
 
 type ProductHandler struct {
@@ -44,7 +48,7 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	//defer cancel()
 
 	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date",
-		"category", "manufacturer", "sort_by", "sort_order")
+		"category", "store", "sort_by", "sort_order")
 
 	products, err := h.service.GetAll(ctx, queryParams)
 	if err != nil {
@@ -63,7 +67,7 @@ func (h *ProductHandler) Patch(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusBadRequest, err)
 	}
 
-	product := new(core.PatchProduct)
+	product := new(core.PatchProductDTO)
 
 	if err := c.BodyParser(product); err != nil {
 		return utils.FiberError(c, fiber.StatusBadRequest, err)
@@ -78,7 +82,38 @@ func (h *ProductHandler) Patch(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) Create(c *fiber.Ctx) error {
-	//ctx := c.UserContext()
+	now := time.Now().Unix()
 
-	return nil
+	claims, err := jwt.ExtractTokenMetadata(c)
+	if err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	if now > claims.Expires || claims.Customer == true {
+		return utils.FiberError(
+			c,
+			fiber.StatusUnauthorized,
+			errors.New("unauthorized, check expiration time or access level of your token"),
+		)
+	}
+
+	ctx := c.UserContext()
+	product := new(core.CreateProductDTO)
+
+	if err := c.BodyParser(product); err != nil {
+		return utils.FiberError(c, fiber.StatusBadRequest, err)
+	}
+
+	if product.Name == "" || product.ImagePath == "" || product.Price == 0 || product.ManufacturingDate == "" ||
+		product.ExpirationDate == "" || product.UnitStock < 0 {
+		return utils.FiberError(c, fiber.StatusBadRequest, errors.New("the required parameters cannot be empty"))
+	}
+
+	if err := h.service.Create(ctx, product, claims.Id, claims.StoreId); err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"msg": "Product was created",
+	})
 }

@@ -89,10 +89,10 @@ func (s *EmployeeStorage) FindAll(ctx context.Context) ([]*core.Employee, error)
 }
 
 func (s *EmployeeStorage) GetPassByEmail(ctx context.Context, email string) (*core.SigninEmployee, error) {
-	q := `select employee_id, password_hash from employees where email=$1`
+	q := `select employee_id, password_hash, company_id from employees where email=$1`
 	employee := core.SigninEmployee{}
 
-	if err := s.pool.QueryRow(ctx, q, email).Scan(&employee.EmployeeId, &employee.Password); err != nil {
+	if err := s.pool.QueryRow(ctx, q, email).Scan(&employee.EmployeeId, &employee.Password, &employee.CompanyId); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
