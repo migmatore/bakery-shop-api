@@ -89,7 +89,7 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	if now > claims.Expires || claims.Customer == true {
+	if now > claims.Expires || claims.Customer == true || claims.Admin == false {
 		return utils.FiberError(
 			c,
 			fiber.StatusUnauthorized,

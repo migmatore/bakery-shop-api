@@ -11,7 +11,7 @@ import (
 type EmployeeStorage interface {
 	Create(ctx context.Context, employee *core.CreateEmployee) (int, error)
 	FindAll(ctx context.Context) ([]*core.Employee, error)
-	GetPassByEmail(ctx context.Context, email string) (*core.SigninEmployee, error)
+	GetAccByEmail(ctx context.Context, email string) (*core.SigninEmployee, error)
 }
 
 type EmployeeService struct {
@@ -23,7 +23,7 @@ func NewEmployeeService(storage EmployeeStorage) *EmployeeService {
 }
 
 func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (string, error) {
-	acc, err := s.storage.GetPassByEmail(ctx, employeeAcc.Email)
+	acc, err := s.storage.GetAccByEmail(ctx, employeeAcc.Email)
 	if err != nil {
 		return "", errors.New("employee not found")
 	}
@@ -32,7 +32,7 @@ func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEm
 		return "", errors.New("incorrect password")
 	}
 
-	token, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false, acc.CompanyId)
+	token, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false, acc.CompanyId, acc.Admin)
 	if err != nil {
 		return "", errors.New("token generation error")
 	}

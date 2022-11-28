@@ -58,6 +58,7 @@ type SigninEmployee struct {
 	EmployeeId int    `json:"employee_id"`
 	Password   string `json:"password"`
 	CompanyId  int    `json:"company_id"`
+	Admin      bool   `json:"admin"`
 }
 
 func NewCreateStoreAdminFromDTO(dto *CreateStoreAdminDTO, positionId *int, companyId int) (*CreateEmployee, error) {

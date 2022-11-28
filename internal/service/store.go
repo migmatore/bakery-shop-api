@@ -62,7 +62,7 @@ func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (
 		return "", err
 	}
 
-	token, err := middleware.GenerateNewAccessToken(employeeId, false, storeId)
+	token, err := middleware.GenerateNewAccessToken(employeeId, false, storeId, true)
 	if err != nil {
 		return "", nil
 	}

@@ -91,7 +91,7 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 		return "", nil
 	}
 
-	token, err := middleware.GenerateNewAccessToken(customerId, true, 0)
+	token, err := middleware.GenerateNewAccessToken(customerId, true, 0, false)
 	if err != nil {
 		return "", nil
 	}

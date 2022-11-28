@@ -11,6 +11,7 @@ type TokenMetadata struct {
 	Id       int
 	StoreId  int
 	Customer bool
+	Admin    bool
 }
 
 // ExtractTokenMetadata func to extract metadata from JWT.
@@ -28,12 +29,14 @@ func ExtractTokenMetadata(c *fiber.Ctx) (*TokenMetadata, error) {
 		id := int(claims["id"].(float64))
 		storeId := int(claims["store_id"].(float64))
 		customer := claims["customer"].(bool)
+		admin := claims["admin"].(bool)
 
 		return &TokenMetadata{
 			Expires:  expires,
 			Id:       id,
 			StoreId:  storeId,
 			Customer: customer,
+			Admin:    admin,
 		}, nil
 	}
 
