@@ -2,15 +2,18 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/middleware"
 	"github.com/migmatore/bakery-shop-api/internal/storage"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CustomerStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Customer, error)
 	FindAll(ctx context.Context) ([]*core.Customer, error)
 	Create(ctx context.Context, customer *core.CreateCustomer) (int, error)
+	FindAccByEmail(ctx context.Context, email string) (*core.SigninCustomer, error)
 }
 
 type CustomerDeliveryAddressStorage interface {
@@ -94,6 +97,24 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 	token, err := middleware.GenerateNewAccessToken(customerId, true, 0, false)
 	if err != nil {
 		return "", nil
+	}
+
+	return token, nil
+}
+
+func (s *CustomerService) Signin(ctx context.Context, customer *core.SigninCustomerDTO) (string, error) {
+	acc, err := s.customerStorage.FindAccByEmail(ctx, customer.Email)
+	if err != nil {
+		return "", errors.New("customer not found")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.PasswordHash), []byte(customer.Password)); err != nil {
+		return "", errors.New("incorrect password")
+	}
+
+	token, err := middleware.GenerateNewAccessToken(acc.CustomerId, true, 0, false)
+	if err != nil {
+		return "", errors.New("token generation error")
 	}
 
 	return token, nil

@@ -52,6 +52,23 @@ func (s *CustomerStorage) Create(ctx context.Context, customer *core.CreateCusto
 	return id, nil
 }
 
+func (s *CustomerStorage) FindAccByEmail(ctx context.Context, email string) (*core.SigninCustomer, error) {
+	q := `select customer_id, password_hash from customers where email=$1`
+	customer := core.SigninCustomer{}
+
+	if err := s.pool.QueryRow(ctx, q, email).Scan(&customer.CustomerId, &customer.PasswordHash); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return nil, err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return nil, err
+	}
+
+	return &customer, nil
+}
+
 func (s *CustomerStorage) FindOne(ctx context.Context, id int) (*core.Customer, error) {
 	q := `select customer_id, first_name, last_name, patronymic, image_path, phone_number, email, password_hash, 
        delivery_address_id, cart_id, wish_list_id, created_at, updated_at from customers where customers.customer_id=$1`

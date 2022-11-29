@@ -11,7 +11,7 @@ import (
 type EmployeeStorage interface {
 	Create(ctx context.Context, employee *core.CreateEmployee) (int, error)
 	FindAll(ctx context.Context) ([]*core.Employee, error)
-	GetAccByEmail(ctx context.Context, email string) (*core.SigninEmployee, error)
+	FindAccByEmail(ctx context.Context, email string) (*core.SigninEmployee, error)
 }
 
 type EmployeeService struct {
@@ -23,12 +23,12 @@ func NewEmployeeService(storage EmployeeStorage) *EmployeeService {
 }
 
 func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (string, error) {
-	acc, err := s.storage.GetAccByEmail(ctx, employeeAcc.Email)
+	acc, err := s.storage.FindAccByEmail(ctx, employeeAcc.Email)
 	if err != nil {
 		return "", errors.New("employee not found")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(acc.Password), []byte(employeeAcc.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.PasswordHash), []byte(employeeAcc.Password)); err != nil {
 		return "", errors.New("incorrect password")
 	}
 

@@ -60,6 +60,21 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) Patch(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+
+	claims, err := jwt.ExtractTokenMetadata(c)
+	if err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	if now > claims.Expires || claims.Customer == true || claims.Admin == false {
+		return utils.FiberError(
+			c,
+			fiber.StatusUnauthorized,
+			errors.New("unauthorized, check expiration time or access level of your token"),
+		)
+	}
+
 	ctx := c.UserContext()
 
 	id, err := c.ParamsInt("id")
@@ -116,4 +131,8 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{
 		"msg": "Product was created",
 	})
+}
+
+func (h *ProductHandler) Delete(c *fiber.Ctx) error {
+	return nil
 }

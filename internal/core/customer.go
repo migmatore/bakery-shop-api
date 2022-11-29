@@ -47,6 +47,16 @@ type CreateCustomerDTO struct {
 	DeliveryAddress *CreateDeliveryAddressDTO `json:"delivery_address,omitempty"`
 }
 
+type SigninCustomerDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SigninCustomer struct {
+	CustomerId   int
+	PasswordHash string
+}
+
 func NewCreateCustomerFromDTO(dto *CreateCustomerDTO, deliveryAddressId *int, cartId int, wishListId int) (*CreateCustomer, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {

@@ -13,6 +13,7 @@ type CustomerService interface {
 	GetById(ctx context.Context, id int) (*core.Customer, error)
 	GetAll(ctx context.Context) ([]*core.Customer, error)
 	Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error)
+	Signin(ctx context.Context, customer *core.SigninCustomerDTO) (string, error)
 }
 
 type CustomerHandler struct {
@@ -24,7 +25,25 @@ func NewCustomerHandler(s CustomerService) *CustomerHandler {
 }
 
 func (h *CustomerHandler) Signin(c *fiber.Ctx) error {
-	return nil
+	ctx := c.UserContext()
+	customerAcc := new(core.SigninCustomerDTO)
+
+	if err := c.BodyParser(customerAcc); err != nil {
+		return utils.FiberError(c, fiber.StatusBadRequest, err)
+	}
+
+	if customerAcc.Email == "" || customerAcc.Password == "" {
+		return utils.FiberError(c, fiber.StatusBadRequest, errors.New("the required parameters cannot be empty"))
+	}
+
+	token, err := h.service.Signin(ctx, customerAcc)
+	if err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"token": token,
+	})
 }
 
 func (h *CustomerHandler) Signup(c *fiber.Ctx) error {

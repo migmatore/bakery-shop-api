@@ -88,13 +88,13 @@ func (s *EmployeeStorage) FindAll(ctx context.Context) ([]*core.Employee, error)
 	return employees, nil
 }
 
-func (s *EmployeeStorage) GetAccByEmail(ctx context.Context, email string) (*core.SigninEmployee, error) {
+func (s *EmployeeStorage) FindAccByEmail(ctx context.Context, email string) (*core.SigninEmployee, error) {
 	q := `select employee_id, password_hash, company_id, admin from employees where email=$1`
 	employee := core.SigninEmployee{}
 
 	if err := s.pool.QueryRow(ctx, q, email).Scan(
 		&employee.EmployeeId,
-		&employee.Password,
+		&employee.PasswordHash,
 		&employee.CompanyId,
 		&employee.Admin,
 	); err != nil {

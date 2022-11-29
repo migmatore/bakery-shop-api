@@ -60,6 +60,7 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 	products.Use(middleware.JWTProtected())
 	products.Patch("/:id", h.Product.Patch)
 	products.Post("/", h.Product.Create)
+	products.Delete("/:id", h.Product.Delete)
 
 	stores := v1.Group("/stores")
 	stores.Post("/", h.Store.Create)
