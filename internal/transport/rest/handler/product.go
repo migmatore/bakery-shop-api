@@ -15,6 +15,7 @@ type ProductService interface {
 	GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error)
 	Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error)
 	Create(ctx context.Context, product *core.CreateProductDTO, employeeId int, storeId int) error
+	Delete(ctx context.Context, id int) error
 }
 
 type ProductHandler struct {
@@ -134,5 +135,33 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) Delete(c *fiber.Ctx) error {
-	return nil
+	now := time.Now().Unix()
+
+	claims, err := jwt.ExtractTokenMetadata(c)
+	if err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	if now > claims.Expires || claims.Customer == true || claims.Admin == false {
+		return utils.FiberError(
+			c,
+			fiber.StatusUnauthorized,
+			errors.New("unauthorized, check expiration time or access level of your token"),
+		)
+	}
+
+	ctx := c.UserContext()
+
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return utils.FiberError(c, fiber.StatusBadRequest, err)
+	}
+
+	if err := h.service.Delete(ctx, id); err != nil {
+		return utils.FiberError(c, fiber.StatusInternalServerError, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"msg": "product was successfully deleted",
+	})
 }

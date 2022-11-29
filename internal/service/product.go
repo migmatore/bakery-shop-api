@@ -12,6 +12,7 @@ type ProductStorage interface {
 	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error)
 	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
 	Create(ctx context.Context, product *core.CreateProduct) error
+	Delete(ctx context.Context, id int) error
 }
 
 type ProductEmployeeStorage interface {
@@ -51,4 +52,13 @@ func (s *ProductService) Create(ctx context.Context, product *core.CreateProduct
 	}
 
 	return nil
+}
+
+func (s *ProductService) Delete(ctx context.Context, id int) error {
+	_, err := s.storage.FindOne(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return s.storage.Delete(ctx, id)
 }

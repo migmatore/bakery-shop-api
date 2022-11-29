@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v4"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
@@ -40,6 +42,9 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 		&product.UpdatedAt,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
+			if err == pgx.ErrNoRows {
+				return nil, errors.New("product does not exist")
+			}
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
 		}
@@ -188,6 +193,24 @@ func (s *ProductStorage) Create(ctx context.Context, product *core.CreateProduct
 		product.UnitStock,
 		product.CreatedAt,
 	); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *ProductStorage) Delete(ctx context.Context, id int) error {
+	q := `DELETE FROM products WHERE product_id=$1`
+
+	var err error
+
+	if _, err = s.pool.Exec(ctx, q, id); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return err
