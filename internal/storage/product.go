@@ -92,8 +92,11 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 			&product.CreatedAt,
 			&product.UpdatedAt,
 		)
-		if err != nil {
-			logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		if err := utils.ParsePgError(err); err != nil {
+			if err == pgx.ErrNoRows {
+				return nil, errors.New("product does not exist")
+			}
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
 		}
 
@@ -101,6 +104,7 @@ func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Opt
 	}
 
 	if err = rows.Err(); err != nil {
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
 		return nil, err
 	}
 
@@ -162,6 +166,10 @@ func (s *ProductStorage) Patch(ctx context.Context, id int, product *core.PatchP
 		&newProduct.UpdatedAt,
 	); err != nil {
 		if err := utils.ParsePgError(err); err != nil {
+			if err == pgx.ErrNoRows {
+				return nil, errors.New("product does not exist")
+			}
+
 			logging.GetLogger(ctx).Errorf("Error: %v", err)
 			return nil, err
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 type StoreService interface {
-	Create(ctx context.Context, store *core.CreateStoreDTO) (string, error)
+	Create(ctx context.Context, store *core.CreateStoreDTO) (*core.EmployeeTokenMetadata, error)
 }
 
 type StoreHandler struct {
@@ -39,7 +39,5 @@ func (h *StoreHandler) Create(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"token": token,
-	})
+	return c.Status(fiber.StatusOK).JSON(token)
 }

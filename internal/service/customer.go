@@ -52,7 +52,7 @@ func NewCustomerService(
 	}
 }
 
-func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error) {
+func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCustomerDTO) (*core.CustomerTokenMetadata, error) {
 	var customerId int
 
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
@@ -91,33 +91,37 @@ func (s *CustomerService) Signup(ctx context.Context, customer *core.CreateCusto
 		return nil
 	})
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
 
-	token, err := middleware.GenerateNewAccessToken(customerId, true, 0, false)
+	tokenClaims, err := middleware.GenerateNewAccessToken(customerId, true, 0, false)
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
 
-	return token, nil
+	customerToken := core.NewCustomerTokenMetadata(tokenClaims)
+
+	return customerToken, nil
 }
 
-func (s *CustomerService) Signin(ctx context.Context, customer *core.SigninCustomerDTO) (string, error) {
+func (s *CustomerService) Signin(ctx context.Context, customer *core.SigninCustomerDTO) (*core.CustomerTokenMetadata, error) {
 	acc, err := s.customerStorage.FindAccByEmail(ctx, customer.Email)
 	if err != nil {
-		return "", errors.New("customer not found")
+		return nil, errors.New("customer not found")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(acc.PasswordHash), []byte(customer.Password)); err != nil {
-		return "", errors.New("incorrect password")
+		return nil, errors.New("incorrect password")
 	}
 
-	token, err := middleware.GenerateNewAccessToken(acc.CustomerId, true, 0, false)
+	tokenClaims, err := middleware.GenerateNewAccessToken(acc.CustomerId, true, 0, false)
 	if err != nil {
-		return "", errors.New("token generation error")
+		return nil, errors.New("token generation error")
 	}
 
-	return token, nil
+	customerToken := core.NewCustomerTokenMetadata(tokenClaims)
+
+	return customerToken, nil
 }
 
 func (s *CustomerService) GetById(ctx context.Context, id int) (*core.Customer, error) {

@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS employees
     last_name     VARCHAR(50) NOT NULL,
     patronymic    VARCHAR(50) NULL,
     phone_number  VARCHAR(17) NOT NULL,
-    email         VARCHAR(50) NULL UNIQUE,
-    password_hash VARCHAR(64) NULL UNIQUE,
+    email         VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(64) NOT NULL UNIQUE,
     position_id   INTEGER     NULL REFERENCES positions (position_id) ON DELETE CASCADE,
     company_id    INTEGER     NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     admin         BOOLEAN     NOT NULL DEFAULT FALSE
@@ -174,8 +174,8 @@ CREATE TABLE IF NOT EXISTS customers
     patronymic          VARCHAR(50) NULL,
     image_path          VARCHAR(50) NULL,
     phone_number        VARCHAR(17) NOT NULL,
-    email               VARCHAR(50) NULL UNIQUE,
-    password_hash       VARCHAR(64) NULL UNIQUE,
+    email               VARCHAR(50) NOT NULL UNIQUE,
+    password_hash       VARCHAR(64) NOT NULL UNIQUE,
     delivery_address_id INTEGER     NULL REFERENCES delivery_addresses (delivery_address_id) ON DELETE SET NULL,
     cart_id             INTEGER     NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE,
     wish_list_id        INTEGER     NOT NULL REFERENCES wish_lists (wish_list_id) ON DELETE RESTRICT,
@@ -194,6 +194,10 @@ CREATE TABLE IF NOT EXISTS orders
     delivery_method_id  INTEGER   NOT NULL REFERENCES delivery_methods (delivery_method_id) ON DELETE CASCADE,
     order_date          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX ON products(name);
+CREATE INDEX ON customers(email);
+CREATE INDEX ON employees(email);
 
 INSERT INTO payment_methods(name)
 VALUES ('Оплата онлайн'),

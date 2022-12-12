@@ -12,8 +12,8 @@ import (
 type CustomerService interface {
 	GetById(ctx context.Context, id int) (*core.Customer, error)
 	GetAll(ctx context.Context) ([]*core.Customer, error)
-	Signup(ctx context.Context, customer *core.CreateCustomerDTO) (string, error)
-	Signin(ctx context.Context, customer *core.SigninCustomerDTO) (string, error)
+	Signup(ctx context.Context, customer *core.CreateCustomerDTO) (*core.CustomerTokenMetadata, error)
+	Signin(ctx context.Context, customer *core.SigninCustomerDTO) (*core.CustomerTokenMetadata, error)
 }
 
 type CustomerHandler struct {
@@ -41,9 +41,7 @@ func (h *CustomerHandler) Signin(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"token": token,
-	})
+	return c.Status(fiber.StatusOK).JSON(token)
 }
 
 func (h *CustomerHandler) Signup(c *fiber.Ctx) error {
@@ -65,9 +63,7 @@ func (h *CustomerHandler) Signup(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"token": token,
-	})
+	return c.Status(fiber.StatusOK).JSON(token)
 }
 
 // GetById TODO handle context timeout errors

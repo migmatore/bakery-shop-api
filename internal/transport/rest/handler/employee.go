@@ -9,7 +9,7 @@ import (
 )
 
 type EmployeeService interface {
-	Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (string, error)
+	Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (*core.EmployeeTokenMetadata, error)
 	GetAll(ctx context.Context) ([]*core.Employee, error)
 }
 
@@ -38,9 +38,7 @@ func (h *EmployeeHandler) Signin(c *fiber.Ctx) error {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"token": token,
-	})
+	return c.Status(fiber.StatusOK).JSON(token)
 }
 
 func (h *EmployeeHandler) GetAll(c *fiber.Ctx) error {

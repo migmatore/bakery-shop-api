@@ -22,22 +22,24 @@ func NewEmployeeService(storage EmployeeStorage) *EmployeeService {
 	return &EmployeeService{storage: storage}
 }
 
-func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (string, error) {
+func (s *EmployeeService) Signin(ctx context.Context, employeeAcc *core.SigninEmployeeDTO) (*core.EmployeeTokenMetadata, error) {
 	acc, err := s.storage.FindAccByEmail(ctx, employeeAcc.Email)
 	if err != nil {
-		return "", errors.New("employee not found")
+		return nil, errors.New("employee not found")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(acc.PasswordHash), []byte(employeeAcc.Password)); err != nil {
-		return "", errors.New("incorrect password")
+		return nil, errors.New("incorrect password")
 	}
 
-	token, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false, acc.CompanyId, acc.Admin)
+	tokenClaims, err := middleware.GenerateNewAccessToken(acc.EmployeeId, false, acc.CompanyId, acc.Admin)
 	if err != nil {
-		return "", errors.New("token generation error")
+		return nil, errors.New("token generation error")
 	}
 
-	return token, nil
+	employeeToken := core.NewEmployeeTokenMetadata(tokenClaims)
+
+	return employeeToken, nil
 }
 
 func (s *EmployeeService) GetAll(ctx context.Context) ([]*core.Employee, error) {

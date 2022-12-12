@@ -36,23 +36,41 @@ func jwtError(c *fiber.Ctx, err error) error {
 	})
 }
 
+type TokenWithClaims struct {
+	Token    string
+	Expires  int64
+	Id       int
+	Customer bool
+	StoreId  int
+	Admin    bool
+}
+
 // GenerateNewAccessToken TODO move from middleware package
 // TODO create access levels
-func GenerateNewAccessToken(id int, customer bool, storeId int, admin bool) (string, error) {
+func GenerateNewAccessToken(id int, customer bool, storeId int, admin bool) (*TokenWithClaims, error) {
+	expires := time.Now().Add(time.Hour * 48).Unix()
+
 	claims := jwt.MapClaims{
 		"id":       id,
 		"customer": customer,
 		"store_id": storeId,
 		"admin":    admin,
-		"exp":      time.Now().Add(time.Hour * 48).Unix(),
+		"exp":      expires,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	t, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return t, nil
+	return &TokenWithClaims{
+		Token:    t,
+		Expires:  expires,
+		Id:       id,
+		Customer: customer,
+		StoreId:  storeId,
+		Admin:    admin,
+	}, nil
 }

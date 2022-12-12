@@ -33,7 +33,7 @@ func NewStoreService(
 	}
 }
 
-func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (string, error) {
+func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (*core.EmployeeTokenMetadata, error) {
 	var employeeId int
 	var storeId int
 
@@ -59,13 +59,15 @@ func (s *StoreService) Create(ctx context.Context, store *core.CreateStoreDTO) (
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	token, err := middleware.GenerateNewAccessToken(employeeId, false, storeId, true)
+	tokenClaims, err := middleware.GenerateNewAccessToken(employeeId, false, storeId, true)
 	if err != nil {
-		return "", nil
+		return nil, nil
 	}
 
-	return token, nil
+	employeeToken := core.NewEmployeeTokenMetadata(tokenClaims)
+
+	return employeeToken, nil
 }

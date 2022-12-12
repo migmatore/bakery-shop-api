@@ -1,6 +1,9 @@
 package core
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/migmatore/bakery-shop-api/internal/middleware"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Employee struct {
 	EmployeeId   int     `json:"employee_id"`
@@ -61,6 +64,14 @@ type SigninEmployee struct {
 	Admin        bool
 }
 
+type EmployeeTokenMetadata struct {
+	Token   string `json:"token"`
+	Expires int64  `json:"expires"`
+	Id      int    `json:"id"`
+	StoreId int    `json:"store_id"`
+	Admin   bool   `json:"admin"`
+}
+
 func NewCreateStoreAdminFromDTO(dto *CreateStoreAdminDTO, positionId *int, companyId int) (*CreateEmployee, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -97,4 +108,14 @@ func NewCreateEmployeeFromDTO(dto *CreateEmployeeDTO, positionId *int, companyId
 		CompanyId:    companyId,
 		Admin:        dto.Admin,
 	}, nil
+}
+
+func NewEmployeeTokenMetadata(claims *middleware.TokenWithClaims) *EmployeeTokenMetadata {
+	return &EmployeeTokenMetadata{
+		Token:   claims.Token,
+		Expires: claims.Expires,
+		Id:      claims.Id,
+		StoreId: claims.StoreId,
+		Admin:   claims.Admin,
+	}
 }

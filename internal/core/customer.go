@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/migmatore/bakery-shop-api/internal/middleware"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
@@ -57,6 +58,13 @@ type SigninCustomer struct {
 	PasswordHash string
 }
 
+type CustomerTokenMetadata struct {
+	Token    string `json:"token"`
+	Expires  int64  `json:"expires"`
+	Id       int    `json:"id"`
+	Customer bool   `json:"customer"`
+}
+
 func NewCreateCustomerFromDTO(dto *CreateCustomerDTO, deliveryAddressId *int, cartId int, wishListId int) (*CreateCustomer, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -82,4 +90,14 @@ func NewCreateCustomerFromDTO(dto *CreateCustomerDTO, deliveryAddressId *int, ca
 		CreatedAt:         time.Now(),
 		UpdatedAt:         nil,
 	}, nil
+}
+
+// TODO refactor
+func NewCustomerTokenMetadata(claims *middleware.TokenWithClaims) *CustomerTokenMetadata {
+	return &CustomerTokenMetadata{
+		Token:    claims.Token,
+		Expires:  claims.Expires,
+		Id:       claims.Id,
+		Customer: true,
+	}
 }
