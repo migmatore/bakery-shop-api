@@ -18,6 +18,7 @@ type Deps struct {
 
 type Handler struct {
 	app      *fiber.App
+	Health   *HealthHandler
 	Customer *CustomerHandler
 	Product  *ProductHandler
 	Store    *StoreHandler
@@ -26,6 +27,7 @@ type Handler struct {
 
 func New(deps Deps) *Handler {
 	return &Handler{
+		Health:   NewHealthHandler(),
 		Customer: NewCustomerHandler(deps.CustomerService),
 		Product:  NewProductHandler(deps.ProductService),
 		Store:    NewStoreHandler(deps.StoreService),
@@ -44,6 +46,7 @@ func (h *Handler) Init(ctx context.Context) *fiber.App {
 		return c.Next()
 	})
 	h.app.Get("/metrics", monitor.New(monitor.Config{Title: "Bakery api Metrics Page"}))
+	h.app.Get("/healthz", h.Health.Health)
 
 	api := h.app.Group("/api")
 	v1 := api.Group("/v1")
