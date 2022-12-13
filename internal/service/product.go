@@ -4,15 +4,19 @@ import (
 	"context"
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
+	"github.com/migmatore/bakery-shop-api/pkg/api/pagination"
 	"github.com/migmatore/bakery-shop-api/pkg/api/sort"
+	"math"
 )
 
 type ProductStorage interface {
 	FindOne(ctx context.Context, id int) (*core.Product, error)
-	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error)
+	// TODO Refactor
+	FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option, pag pagination.Pagination) ([]*core.Product, error)
 	Patch(ctx context.Context, id int, product *core.PatchProduct) (*core.Product, error)
 	Create(ctx context.Context, product *core.CreateProduct) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context) (int, error)
 }
 
 type ProductEmployeeStorage interface {
@@ -31,11 +35,27 @@ func (s *ProductService) GetOne(ctx context.Context, id int) (*core.Product, err
 	return s.storage.FindOne(ctx, id)
 }
 
-func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error) {
+func (s *ProductService) GetAll(ctx context.Context, queryParams map[string]string) (*core.ProductPage, error) {
 	filterOptions := filter.GetFilterOptions(queryParams)
 	sortOption := sort.GetSortOptions(queryParams)
+	pag := pagination.GetPaginationOptions(queryParams)
 
-	return s.storage.FindAll(ctx, filterOptions, sortOption)
+	products, err := s.storage.FindAll(ctx, filterOptions, sortOption, pag)
+	if err != nil {
+		return nil, err
+	}
+
+	total, err := s.storage.Count(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &core.ProductPage{
+		Products: products,
+		Page:     pag.Page,
+		Total:    total,
+		LastPage: int(math.Ceil(float64(total / pag.PerPage))),
+	}, nil
 }
 
 func (s *ProductService) Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error) {

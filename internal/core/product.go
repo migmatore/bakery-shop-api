@@ -21,6 +21,13 @@ type Product struct {
 	UpdatedAt         *time.Time  `json:"updated_at,omitempty"`
 }
 
+type ProductPage struct {
+	Products []*Product `json:"products"`
+	Page     int        `json:"page"`
+	Total    int        `json:"total"`
+	LastPage int        `json:"lastPage"`
+}
+
 type PatchProductDTO struct {
 	Name              *string  `json:"name,omitempty"`
 	ImagePath         *string  `json:"image_path,omitempty"`

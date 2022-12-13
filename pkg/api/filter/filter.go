@@ -16,7 +16,7 @@ func GetFilterOptions(queryParams map[string]string) []Option {
 	filterOptions := make([]Option, 0)
 
 	for key, value := range queryParams {
-		if key != "sort_by" && key != "sort_order" {
+		if key != "sort_by" && key != "sort_order" && key != "page" && key != "per_page" {
 			if value != "" {
 				//opAndVal := regexp.MustCompile("^[a-z]{2}:").Split(value, 2)
 				opAndVal := strings.SplitN(value, ":", 2)

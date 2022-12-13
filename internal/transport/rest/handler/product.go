@@ -12,7 +12,7 @@ import (
 
 type ProductService interface {
 	GetOne(ctx context.Context, id int) (*core.Product, error)
-	GetAll(ctx context.Context, queryParams map[string]string) ([]*core.Product, error)
+	GetAll(ctx context.Context, queryParams map[string]string) (*core.ProductPage, error)
 	Patch(ctx context.Context, id int, product *core.PatchProductDTO) (*core.Product, error)
 	Create(ctx context.Context, product *core.CreateProductDTO, employeeId int, storeId int) error
 	Delete(ctx context.Context, id int) error
@@ -49,14 +49,14 @@ func (h *ProductHandler) GetAll(c *fiber.Ctx) error {
 	//defer cancel()
 
 	queryParams := utils.GetQueryParams(c, "name", "price", "manufacturing_date", "expiration_date",
-		"category", "store", "sort_by", "sort_order")
+		"category", "store", "sort_by", "sort_order", "page", "per_page")
 
-	products, err := h.service.GetAll(ctx, queryParams)
+	productPage, err := h.service.GetAll(ctx, queryParams)
 	if err != nil {
 		return utils.FiberError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(products)
+	return c.Status(fiber.StatusOK).JSON(productPage)
 	//return c.Status(fiber.StatusOK).JSON(p)
 }
 

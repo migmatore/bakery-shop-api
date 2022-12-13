@@ -7,6 +7,7 @@ import (
 	"github.com/migmatore/bakery-shop-api/internal/core"
 	"github.com/migmatore/bakery-shop-api/internal/storage/psql"
 	"github.com/migmatore/bakery-shop-api/pkg/api/filter"
+	"github.com/migmatore/bakery-shop-api/pkg/api/pagination"
 	"github.com/migmatore/bakery-shop-api/pkg/api/sort"
 	"github.com/migmatore/bakery-shop-api/pkg/logging"
 	"github.com/migmatore/bakery-shop-api/pkg/utils"
@@ -56,13 +57,19 @@ func (s *ProductStorage) FindOne(ctx context.Context, id int) (*core.Product, er
 	return &product, nil
 }
 
-func (s *ProductStorage) FindAll(ctx context.Context, filterOptions []filter.Option, sortOption sort.Option) ([]*core.Product, error) {
+func (s *ProductStorage) FindAll(
+	ctx context.Context,
+	filterOptions []filter.Option,
+	sortOption sort.Option,
+	pag pagination.Pagination,
+) ([]*core.Product, error) {
 	q := `SELECT product_id, name, image_path, description, price, manufacturing_date, expiration_date, category_id, 
        recipe_id, store_id, unit_stock, created_at, updated_at
 		  FROM products`
 
 	q = filter.EnrichQueryWithFilter(q, filterOptions)
 	q = sort.EnrichQueryWithSort(q, sortOption)
+	q = pagination.EnrichQueryWithPagination(q, pag)
 
 	products := make([]*core.Product, 0)
 
@@ -229,4 +236,22 @@ func (s *ProductStorage) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (s *ProductStorage) Count(ctx context.Context) (int, error) {
+	q := `SELECT COUNT(*) FROM products`
+
+	var total int
+
+	if err := s.pool.QueryRow(ctx, q).Scan(&total); err != nil {
+		if err := utils.ParsePgError(err); err != nil {
+			logging.GetLogger(ctx).Errorf("Error: %v", err)
+			return 0, err
+		}
+
+		logging.GetLogger(ctx).Errorf("Query error. %v", err)
+		return 0, err
+	}
+
+	return total, nil
 }
